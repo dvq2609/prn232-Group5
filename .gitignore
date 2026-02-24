@@ -69,3 +69,4 @@ ScaffoldingReadMe.txt
 *.env
 appsettings.Production.json
 backend/appsettings.json
+backend/appsettings.json

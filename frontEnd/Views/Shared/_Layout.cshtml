@@ -22,16 +22,20 @@
         <div class="max-w-[1300px] mx-auto px-4 py-2 flex justify-between items-center text-xs">
             <div class="flex items-center space-x-4">
                 <span class="text-gray-600">Hi, <strong>
-                    @* @if(Context.Session.GetString("Token") != null)
-                    {
+                        @if (Context.Session.GetString("Token") != null)
+                        {
                             @Context.Session.GetString("Email")
-                    }
-                    else{
-                        <a asp-action="Login" asp-controller="Auth">Login</a>
-                    } *@
-                </strong></span>
+
+                        }
+                        else
+                        {
+                            <a asp-action="Login" asp-controller="Auth">Login</a>
+                        }
+                    </strong></span>
+                <a class="hover:underline" asp-action="Logout" asp-controller="Auth">Logout</a>
                 <a class="hover:underline" href="#">Daily Deals</a>
                 <a class="hover:underline" href="#">Help &amp; Contact</a>
+
             </div>
             <div class="flex items-center space-x-6">
                 <a class="hover:underline" href="#">Ship to</a>
@@ -52,33 +56,29 @@
         </div>
     </div>
     <header class="bg-white sticky top-0 z-50">
-        <div class="max-w-[1300px] mx-auto px-4 py-4 flex items-center gap-6">
+        <div class="max-w-[1300px] mx-auto px-4 py-3 flex items-center gap-3">
             <div class="flex-shrink-0">
-                <div class="text-3xl font-bold italic tracking-tighter">
-                    <img style="width: 10% ; height: 10%;"
-                        src="https://upload.wikimedia.org/wikipedia/commons/1/1b/EBay_logo.svg" alt="eBay"
-                        class="logo" />
-                </div>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/1/1b/EBay_logo.svg" alt="eBay"
+                    class="h-10 w-auto" />
             </div>
-            <div class="flex-grow flex items-center">
-                <div class="relative w-full flex items-center border-2 border-gray-800">
-                    <div class="flex items-center px-3 text-gray-500">
-                        <span class="material-symbols-outlined">search</span>
-                    </div>
-                    <input class="w-full py-2 border-none focus:ring-0 text-sm" placeholder="Search for anything"
-                        type="text" />
+            <div class="flex-grow flex items-center min-w-0">
+                <div class="relative flex-grow flex items-center border-2 border-gray-800">
+                    <input class="w-full py-2 pl-4 pr-2 border-none focus:ring-0 text-sm outline-none"
+                        placeholder="Search for anything" type="text" />
                     <div
-                        class="border-l border-gray-300 px-4 h-full flex items-center text-sm text-gray-600 whitespace-nowrap cursor-pointer">
+                        class="border-l border-gray-300 px-3 py-2 flex items-center text-sm text-gray-600 whitespace-nowrap cursor-pointer flex-shrink-0">
                         All Categories
                         <span class="material-symbols-outlined text-sm ml-1">expand_more</span>
                     </div>
+                    <button
+                        class="bg-blue-600 text-white px-6 py-2 font-medium hover:bg-blue-700 transition-colors flex-shrink-0 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-base">search</span>
+                        Search
+                    </button>
                 </div>
-                <button
-                    class="bg-blue-600 text-white px-10 py-2.5 font-medium ml-2 hover:bg-blue-700 transition-colors">Search</button>
             </div>
-            <div class="text-xs text-gray-500 hover:underline cursor-pointer">Advanced</div>
+            <div class="text-xs text-gray-500 hover:underline cursor-pointer flex-shrink-0">Advanced</div>
         </div>
-
     </header>
     <main class="max-w-[1300px] mx-auto px-4 py-8">
         @RenderBody()
