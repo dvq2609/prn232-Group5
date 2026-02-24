@@ -1,49 +1,169 @@
-﻿<!DOCTYPE html>
+﻿@using frontEnd.Models;
+@model LoginViewModel;
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - frontEnd</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/frontEnd.styles.css" asp-append-version="true" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>@ViewData["Title"] </title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0"
+        rel="stylesheet" />
+    <style type="text/tailwindcss">
+
+    </style>
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">frontEnd</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+
+<body class="text-gray-800">
+    <div class="bg-white border-b border-gray-200">
+        <div class="max-w-[1300px] mx-auto px-4 py-2 flex justify-between items-center text-xs">
+            <div class="flex items-center space-x-4">
+                <span class="text-gray-600">Hi, <strong>
+                    @* @if(Context.Session.GetString("Token") != null)
+                    {
+                            @Context.Session.GetString("Email")
+                    }
+                    else{
+                        <a asp-action="Login" asp-controller="Auth">Login</a>
+                    } *@
+                </strong></span>
+                <a class="hover:underline" href="#">Daily Deals</a>
+                <a class="hover:underline" href="#">Help &amp; Contact</a>
+            </div>
+            <div class="flex items-center space-x-6">
+                <a class="hover:underline" href="#">Ship to</a>
+                <a class="hover:underline" href="#">Sell</a>
+                <a class="flex items-center hover:underline" href="#">Watchlist <span
+                        class="material-symbols-outlined text-sm ml-0.5">expand_more</span></a>
+                <div class="relative group">
+                    <button class="flex items-center hover:underline">My Account <span
+                            class="material-symbols-outlined text-sm ml-0.5">expand_more</span></button>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="material-symbols-outlined text-lg">notifications</span>
+                    <a class="relative" href="#">
+                        <span class="material-symbols-outlined text-lg">shopping_cart</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <header class="bg-white sticky top-0 z-50">
+        <div class="max-w-[1300px] mx-auto px-4 py-4 flex items-center gap-6">
+            <div class="flex-shrink-0">
+                <div class="text-3xl font-bold italic tracking-tighter">
+                    <img style="width: 10% ; height: 10%;"
+                        src="https://upload.wikimedia.org/wikipedia/commons/1/1b/EBay_logo.svg" alt="eBay"
+                        class="logo" />
+                </div>
+            </div>
+            <div class="flex-grow flex items-center">
+                <div class="relative w-full flex items-center border-2 border-gray-800">
+                    <div class="flex items-center px-3 text-gray-500">
+                        <span class="material-symbols-outlined">search</span>
+                    </div>
+                    <input class="w-full py-2 border-none focus:ring-0 text-sm" placeholder="Search for anything"
+                        type="text" />
+                    <div
+                        class="border-l border-gray-300 px-4 h-full flex items-center text-sm text-gray-600 whitespace-nowrap cursor-pointer">
+                        All Categories
+                        <span class="material-symbols-outlined text-sm ml-1">expand_more</span>
+                    </div>
+                </div>
+                <button
+                    class="bg-blue-600 text-white px-10 py-2.5 font-medium ml-2 hover:bg-blue-700 transition-colors">Search</button>
+            </div>
+            <div class="text-xs text-gray-500 hover:underline cursor-pointer">Advanced</div>
+        </div>
+
+    </header>
+    <main class="max-w-[1300px] mx-auto px-4 py-8">
+        @RenderBody()
+    </main>
+    <footer class="bg-white border-t border-gray-200 pt-12 pb-8 mt-12">
+        <div class="max-w-[1300px] mx-auto px-4">
+            <div class="grid grid-cols-5 gap-8 mb-12">
+                <div>
+                    <h4 class="font-bold text-sm mb-4">Shop</h4>
+                    <ul class="space-y-2 text-xs text-gray-600">
+                        <li><a class="hover:underline" href="#">Registration</a></li>
+                        <li><a class="hover:underline" href="#">Money Back Guarantee</a></li>
+                        <li><a class="hover:underline" href="#">Bidding &amp; buying help</a></li>
+                        <li><a class="hover:underline" href="#">Stores</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm mb-4">Sell</h4>
+                    <ul class="space-y-2 text-xs text-gray-600">
+                        <li><a class="hover:underline" href="#">Start selling</a></li>
+                        <li><a class="hover:underline" href="#">Learn to sell</a></li>
+                        <li><a class="hover:underline" href="#">Affiliates</a></li>
+                    </ul>
+                    <h4 class="font-bold text-sm mb-4 mt-6">Tools &amp; apps</h4>
+                    <ul class="space-y-2 text-xs text-gray-600">
+                        <li><a class="hover:underline" href="#">Developers</a></li>
+                        <li><a class="hover:underline" href="#">Security center</a></li>
+                        <li><a class="hover:underline" href="#">Site map</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm mb-4">Stay connected</h4>
+                    <ul class="space-y-2 text-xs text-gray-600">
+                        <li><a class="hover:underline" href="#">Our Blog</a></li>
+                        <li><a class="hover:underline" href="#">Facebook</a></li>
+                        <li><a class="hover:underline" href="#">Twitter</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm mb-4">About Us</h4>
+                    <ul class="space-y-2 text-xs text-gray-600">
+                        <li><a class="hover:underline" href="#">Company info</a></li>
+                        <li><a class="hover:underline" href="#">News</a></li>
+                        <li><a class="hover:underline" href="#">Investors</a></li>
+                        <li><a class="hover:underline" href="#">Careers</a></li>
+                        <li><a class="hover:underline" href="#">Government relations</a></li>
+                        <li><a class="hover:underline" href="#">Policies</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-bold text-sm mb-4">Help &amp; Contact</h4>
+                    <ul class="space-y-2 text-xs text-gray-600">
+                        <li><a class="hover:underline" href="#">Seller Center</a></li>
+                        <li><a class="hover:underline" href="#">Contact Us</a></li>
+                        <li><a class="hover:underline" href="#">Returns</a></li>
+                    </ul>
+                    <h4 class="font-bold text-sm mb-4 mt-6">Community</h4>
+                    <ul class="space-y-2 text-xs text-gray-600">
+                        <li><a class="hover:underline" href="#">Announcements</a></li>
+                        <li><a class="hover:underline" href="#">Discussion boards</a></li>
+                        <li><a class="hover:underline" href="#">Answer center</a></li>
                     </ul>
                 </div>
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - frontEnd - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <div class="border-t border-gray-100 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-[10px] text-gray-500 max-w-3xl">
+                    Copyright © 1995-2024 Market Inc. All Rights Reserved.
+                    <a class="underline ml-2" href="#">Accessibility</a>,
+                    <a class="underline ml-2" href="#">User Agreement</a>,
+                    <a class="underline ml-2" href="#">Privacy</a>,
+                    <a class="underline ml-2" href="#">Payments Terms of Use</a>,
+                    <a class="underline ml-2" href="#">Cookies</a>,
+                    <a class="underline ml-2" href="#">Your Privacy Choices</a> and
+                    <a class="underline ml-2" href="#">AdChoice</a>
+                </div>
+                <div
+                    class="flex items-center space-x-2 text-xs font-medium border border-gray-200 px-3 py-1 rounded cursor-pointer hover:bg-gray-50">
+                    <img alt="USA" class="w-5 h-auto"
+                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1CzCqo4APKD8APnEXsDNxNwH2IhYzcbuf_fg5iPi9JbYWmH_jmj0Ryn4lL0sEIenM-gCV1xFFaTpD-OAFda9gJo4AShcVC0B1M4vCs_myaawAsREoftnSOKtnSOQvJyntAWbIze1f4IhJ45ZGmB1XQgjYw8BxVJ6vCoUL4-WN-eXtVjEeuM2XwVL6rHCi5JeGuZwrhtpdDvbrUfpioR2Ufq9C26BitQyG2RAaif8_0LwWgOT31VQxVmDlbBjQSXE5pzscYYCFqCN6" />
+                    <span>United States</span>
+                </div>
+            </div>
         </div>
     </footer>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    @await RenderSectionAsync("Scripts", required: false)
+
 </body>
+
 </html>
