@@ -11,7 +11,7 @@ using backend.Services;
 namespace backend.Controllers
 {
     [ApiController]
-    [Route("api/controller")]
+    [Route("api/auth")]
     public class AuthController : ControllerBase
     {
         private readonly IMapper _mapper;
@@ -45,6 +45,7 @@ namespace backend.Controllers
                 return Ok(new LoginResponseDto
                 {
                     Token = token,
+                    Email = user.Email,
                     Role = roleName,
                     AccountId = user.Id
                 });
@@ -60,7 +61,8 @@ namespace backend.Controllers
             {
                 new Claim(ClaimTypes.Email, email),
                 new Claim(ClaimTypes.Role, role),
-                new Claim("accountId", accountId.ToString())
+
+                new Claim("AccountId", accountId.ToString())
             };
             var tokenDescriptor = new SecurityTokenDescriptor
             {

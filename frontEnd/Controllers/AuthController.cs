@@ -20,6 +20,7 @@ namespace frontEnd.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)
         {
             if (!ModelState.IsValid)
@@ -32,15 +33,22 @@ namespace frontEnd.Controllers
             if (response.IsSuccessStatusCode)
             {
                 var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponseViewModel>();
-                if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.JwtToken))
+                if (loginResponse != null && !string.IsNullOrEmpty(loginResponse.Token))
                 {
-                    HttpContext.Session.SetString("token", loginResponse.JwtToken);
-                    HttpContext.Session.SetString("role", loginResponse.Role);
-                    HttpContext.Session.SetString("accountID", loginResponse.AccountID.ToString());
+                    HttpContext.Session.SetString("Token", loginResponse.Token);
+                    HttpContext.Session.SetString("Email", loginResponse.Email ?? "");
+                    HttpContext.Session.SetString("Role", loginResponse.Role ?? "");
+                    HttpContext.Session.SetString("AccountId", loginResponse.AccountId.ToString());
                     return RedirectToAction("Index", "Home");
                 }
             }
             return View();
+        }
+        [HttpGet]
+        public IActionResult Logout()
+        {
+            HttpContext.Session.Clear();
+            return RedirectToAction("Login", "Auth");
         }
     }
 }
