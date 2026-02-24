@@ -1,0 +1,222 @@
+﻿@using frontEnd.Models;
+@model ProductViewModel;
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<head>
+    <meta charset="utf-8" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#3665f3",
+                        "background-light": "#f7f7f7",
+                        "background-dark": "#121212",
+                    },
+                    fontFamily: {
+                        display: ["Inter", "system-ui", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "8px",
+                    },
+                },
+            },
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <style type="text/tailwindcss">
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        .filled-star {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+
+<main class="max-w-7xl mx-auto px-4 py-8">
+    <div
+        class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-sm mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 p-6 lg:p-10">
+            <div class="space-y-4">
+                <div
+                    class="aspect-square bg-slate-50 dark:bg-zinc-800 rounded-lg overflow-hidden flex items-center justify-center border border-slate-100 dark:border-zinc-700">
+                    <img alt="@Model.Title"
+                        class="object-contain w-full h-full mix-blend-multiply dark:mix-blend-normal"
+                        src="~/@Model.Image" />
+                </div>
+
+            </div>
+            <div class="flex flex-col">
+                <h1 class="text-3xl font-bold text-slate-900 dark:text-white mb-2 leading-tight">
+                    @Model.Title
+                </h1>
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-6 text-sm">
+                    <div class="flex items-center">
+                        <span class="text-slate-500 dark:text-slate-400">Sold by:</span>
+                        <a class="text-primary hover:underline ml-1 font-medium" href="#">@Model.SellerName</a>
+                    </div>
+                    <div class="h-4 w-[1px] bg-slate-200 dark:bg-zinc-700 hidden sm:block"></div>
+                    <div class="flex items-center">
+                        <span class="text-slate-500 dark:text-slate-400">Category:</span>
+                        <a class="text-primary hover:underline ml-1 font-medium" href="#">@Model.CategoryName</a>
+                    </div>
+                    <a asp-action="Chat" asp-controller="Chat"
+                        class="ml-auto inline-flex items-center px-3 py-1 border border-primary text-primary rounded-full text-xs font-semibold hover:bg-primary/5 transition-colors">
+                        <span class="material-symbols-outlined text-sm mr-1">chat_bubble_outline</span>
+                        Chat with seller
+                    </a>
+                </div>
+                <div class="border-t border-slate-100 dark:border-zinc-800 pt-6">
+                    <div class="flex items-center gap-2 mb-4">
+
+                        <span class="text-lg font-bold">@Model.AverageRating</span>
+                        <span class="material-symbols-outlined filled-star text-xl">star</span>
+                        <a class="text-primary hover:underline text-sm font-medium" href="#reviews">@Model.ReviewCount ratings</a>
+                    </div>
+                    <div class="mb-8">
+                        <div
+                            class="text-slate-500 dark:text-slate-400 text-sm mb-1 uppercase tracking-wider font-semibold">
+                            Price
+                        </div>
+                        <div class="text-4xl font-extrabold text-slate-900 dark:text-white">US @Model.Price</div>
+                    </div>
+                    <div class="flex flex-col gap-3">
+                        <button
+                            class="w-full bg-primary hover:bg-blue-700 text-white font-bold py-3 rounded-full transition-colors">
+                            Buy It Now
+                        </button>
+                        <button
+                            class="w-full border border-primary text-primary hover:bg-primary/5 font-bold py-3 rounded-full transition-colors">
+                            Add to cart
+                        </button>
+                        <button
+                            class="w-full border border-slate-300 dark:border-zinc-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-zinc-800 font-bold py-3 rounded-full transition-colors flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">favorite_border</span>
+                            Add to Watchlist
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="bg-white dark:bg-zinc-900 rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-sm"
+        id="reviews">
+        <div class="p-6 lg:p-10">
+            <h2 class="text-2xl font-bold text-slate-900 dark:text-white mb-8">Ratings &amp; Reviews</h2>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="flex items-end gap-3">
+                        <span class="text-5xl font-bold text-slate-900 dark:text-white leading-none">@Model.AverageRating</span>
+                        <div class="flex flex-col">
+                            <div class="flex text-amber-400">
+                                <span class="material-symbols-outlined filled-star text-2xl" >star</span>
+                              
+)
+                            </div>
+                            <span class="text-sm text-slate-500 dark:text-slate-400">@Model.ReviewCount ratings</span>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium w-12 text-slate-600 dark:text-slate-400">5 star</span>
+                            <div class="flex-grow bg-slate-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-primary h-full w-[70%]"></div>
+                            </div>
+                            <span class="text-sm text-slate-500 dark:text-slate-400 w-8 text-right">1</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium w-12 text-slate-600 dark:text-slate-400">4 star</span>
+                            <div class="flex-grow bg-slate-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-primary h-full w-[18%]"></div>
+                            </div>
+                            <span class="text-sm text-slate-500 dark:text-slate-400 w-8 text-right">24</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium w-12 text-slate-600 dark:text-slate-400">3 star</span>
+                            <div class="flex-grow bg-slate-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-primary h-full w-[6%]"></div>
+                            </div>
+                            <span class="text-sm text-slate-500 dark:text-slate-400 w-8 text-right">8</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium w-12 text-slate-600 dark:text-slate-400">2 star</span>
+                            <div class="flex-grow bg-slate-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-primary h-full w-[2%]"></div>
+                            </div>
+                            <span class="text-sm text-slate-500 dark:text-slate-400 w-8 text-right">3</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-medium w-12 text-slate-600 dark:text-slate-400">1 star</span>
+                            <div class="flex-grow bg-slate-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
+                                <div class="bg-primary h-full w-[1%]"></div>
+                            </div>
+                            <span class="text-sm text-slate-500 dark:text-slate-400 w-8 text-right">1</span>
+                        </div>
+                    </div>
+                    <div class="pt-4">
+                        <button
+                            class="w-full bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white font-semibold py-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-zinc-700 transition-colors">
+                            Write a review
+                        </button>
+                    </div>
+                </div>
+                <div class="lg:col-span-8">
+                    <div
+                        class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-zinc-800">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white uppercase tracking-tight">
+                           Reviews
+                        </h3>
+                       
+                    </div>
+                    <div class="divide-y divide-slate-100 dark:divide-zinc-800">
+                       @foreach(var review in Model.Reviews)
+                        {
+                            <div class="py-8 first:pt-0">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center">
+                                            <span class="material-symbols-outlined text-slate-400">person</span>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-bold text-slate-900 dark:text-white">
+                                                @review.ReviewerUsername
+                                            </div>
+                                            <div class="text-xs text-slate-500 dark:text-slate-400">@review.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                        </div>
+                                    </div>
+                                   
+                                    <div class="flex text-amber-400">
+                                        <div class="text-lg font-bold" style="color:black" > @review.Rating</div>
+                                        @for(int i = 0; i < review.Rating; i++)
+                                        {
+                                            <span class="material-symbols-outlined filled-star text-lg">star</span>
+                                        }
+    
+                                       
+                                    </div>
+                                </div>
+                               
+                                <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
+                                  @review.Comment
+                                </p>
+                          
+                            </div>
+                        }
+
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
