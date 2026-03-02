@@ -62,6 +62,7 @@ namespace backend.Controllers
                 new Claim(ClaimTypes.Email, email),
                 new Claim(ClaimTypes.Role, role),
 
+
                 new Claim("AccountId", accountId.ToString())
             };
             var tokenDescriptor = new SecurityTokenDescriptor

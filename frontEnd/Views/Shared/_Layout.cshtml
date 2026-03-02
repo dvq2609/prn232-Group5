@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var email = HttpContextAccessor.HttpContext.Session.GetString("Email");
+    var role = HttpContextAccessor.HttpContext.Session.GetString("Role");
+    var accountId = HttpContextAccessor.HttpContext.Session.GetInt32("AccountId");
+}
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -19,9 +25,17 @@
     <div class="bg-white border-b border-gray-200">
         <div class="max-w-[1300px] mx-auto px-4 py-2 flex justify-between items-center text-xs">
             <div class="flex items-center space-x-4">
-                <span class="text-gray-600"> <strong>
+                <span class="text-gray-600">Hi <strong>
+                        @if (!string.IsNullOrEmpty(email))
+                        {
+                            @email
+                        }
+                        else
+                        {
+                            <span> <a href="~/Auth/Login">Sign in</a>!</span>
+                        }
 
-                        <a asp-action="Login" asp-controller="Auth">Login</a>
+
 
                     </strong></span>
                 <a class="hover:underline" asp-action="Logout" asp-controller="Auth">Logout</a>
