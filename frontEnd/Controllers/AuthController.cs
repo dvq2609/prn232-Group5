@@ -41,7 +41,8 @@ namespace frontEnd.Controllers
                     return RedirectToAction("Index", "Home");
                 }
             }
-            return View();
+           
+                return View();
         }
         [HttpGet]
         public IActionResult Logout()

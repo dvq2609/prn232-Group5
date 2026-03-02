@@ -70,17 +70,18 @@
                         <span class="text-slate-500 dark:text-slate-400">Category:</span>
                         <a class="text-primary hover:underline ml-1 font-medium" href="#">@Model.CategoryName</a>
                     </div>
-                    <a asp-action="Chat" asp-controller="Chat"
+                    <button onclick="toggleChat()"
                         class="ml-auto inline-flex items-center px-3 py-1 border border-primary text-primary rounded-full text-xs font-semibold hover:bg-primary/5 transition-colors">
                         <span class="material-symbols-outlined text-sm mr-1">chat_bubble_outline</span>
                         Chat with seller
-                    </a>
+                    </button>
                 </div>
                 <div class="border-t border-slate-100 dark:border-zinc-800 pt-6">
                     <div class="flex items-center gap-2 mb-4">
 
                         <span class="text-lg font-bold">@Model.AverageRating</span>
-                        <span class="material-symbols-outlined filled-star text-xl">star</span>
+                        <span class="material-symbols-outlined filled-star text-2xl">star</span>
+                       
                         <a class="text-primary hover:underline text-sm font-medium" href="#reviews">@Model.ReviewCount ratings</a>
                     </div>
                     <div class="mb-8">
@@ -121,7 +122,7 @@
                             <div class="flex text-amber-400">
                                 <span class="material-symbols-outlined filled-star text-2xl" >star</span>
                               
-)
+
                             </div>
                             <span class="text-sm text-slate-500 dark:text-slate-400">@Model.ReviewCount ratings</span>
                         </div>
@@ -220,3 +221,130 @@
         </div>
     </div>
 </main>
+
+<!-- ============================================================ -->
+<!-- CHAT POPUP OVERLAY -->
+<!-- ============================================================ -->
+
+
+<!-- Chat popup -->
+<div id="chatPopup"
+    class="hidden fixed bottom-6 right-6 z-50 flex flex-col w-[380px] h-[600px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden">
+
+    <!-- Header -->
+    <div class="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900">
+        <h3 class="text-lg font-bold">Message seller</h3>
+        <button onclick="toggleChat()" class="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+            <span class="material-symbols-outlined">close</span>
+        </button>
+    </div>
+
+    <!-- Seller info -->
+    <div class="px-4 py-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-sm">
+                @(Model.SellerName?.Substring(0,1).ToUpper() ?? "S")
+            </div>
+            <span class="font-semibold text-sm">@Model.SellerName</span>
+        </div>
+        <span class="text-xs text-green-500 font-medium">● Online</span>
+    </div>
+
+    <!-- Messages area -->
+    <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50 dark:bg-slate-950">
+        <!-- Tin nhắn chào mặc định từ seller -->
+        <div class="flex flex-col space-y-1">
+            <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-4 py-2 rounded-2xl rounded-tl-none self-start max-w-[85%] text-sm shadow-sm">
+                Xin chào! Tôi có thể giúp gì cho bạn về sản phẩm <strong>@Model.Title</strong>?
+            </div>
+            <span class="text-[10px] text-slate-400 ml-1">Seller • vừa xong</span>
+        </div>
+    </div>
+
+    <!-- Input area -->
+    <div class="p-4 bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+        <div class="flex items-center gap-2">
+            <input id="chatInput" type="text" placeholder="Nhập tin nhắn..."
+                class="flex-1 bg-slate-100 dark:bg-slate-800 border-none rounded-full py-2.5 px-4 text-sm focus:ring-2 focus:ring-primary focus:outline-none placeholder:text-slate-500"
+                onkeydown="if(event.key==='Enter') sendMessage()" />
+            <button onclick="sendMessage()"
+                class="w-10 h-10 bg-primary hover:bg-blue-700 text-white rounded-full flex items-center justify-center transition-colors shadow">
+                <span class="material-symbols-outlined text-lg">send</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Nút chat nổi (khi popup đóng) -->
+<button id="chatFab" onclick="toggleChat()"
+    class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center hover:scale-105 hover:bg-blue-700 transition-all duration-200">
+    <span class="material-symbols-outlined text-3xl">chat</span>
+</button>
+
+<script>
+    const chatPopup = document.getElementById('chatPopup');
+    const chatOverlay = document.getElementById('chatOverlay');
+    const chatFab = document.getElementById('chatFab');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    let isOpen = false;
+
+    function toggleChat() {
+        isOpen = !isOpen;
+        if (isOpen) {
+            chatPopup.classList.remove('hidden');
+            chatOverlay.classList.remove('hidden');
+            chatFab.classList.add('hidden');
+            chatInput.focus();
+            scrollToBottom();
+        } else {
+            chatPopup.classList.add('hidden');
+            chatOverlay.classList.add('hidden');
+            chatFab.classList.remove('hidden');
+        }
+    }
+
+    function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        // Tin nhắn của buyer (phải)
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'flex flex-col items-end space-y-1';
+        msgDiv.innerHTML = `
+            <div class="bg-primary text-white px-4 py-2 rounded-2xl rounded-tr-none text-sm max-w-[80%]">
+                ${escapeHtml(text)}
+            </div>
+            <span class="text-[10px] text-slate-400 mr-1">${getTime()}</span>
+        `;
+        chatMessages.appendChild(msgDiv);
+        chatInput.value = '';
+        scrollToBottom();
+
+        // Giả lập seller trả lời sau 1.5s
+        setTimeout(() => {
+            const replyDiv = document.createElement('div');
+            replyDiv.className = 'flex flex-col space-y-1';
+            replyDiv.innerHTML = `
+                <div class="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-4 py-2 rounded-2xl rounded-tl-none self-start max-w-[85%] text-sm shadow-sm">
+                    Cảm ơn bạn đã liên hệ! Tôi sẽ phản hồi sớm nhất có thể 😊
+                </div>
+                <span class="text-[10px] text-slate-400 ml-1">Seller • ${getTime()}</span>
+            `;
+            chatMessages.appendChild(replyDiv);
+            scrollToBottom();
+        }, 1500);
+    }
+
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    function getTime() {
+        return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function escapeHtml(text) {
+        return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+</script>
