@@ -31,6 +31,13 @@ namespace backend.Controllers
                 totalPrice = order.TotalPrice
             });
         }
+
+        [HttpGet("buyer/{buyerId}")]
+        public async Task<IActionResult> GetOrdersByBuyerId(int buyerId)
+        {
+            var orders = await _orderService.GetOrdersByBuyerIdAsync(buyerId);
+            return Ok(orders);
+        }
     }
 
     public class BuyNowRequest

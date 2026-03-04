@@ -20,5 +20,15 @@ namespace backend.Repositories
             var product = await _context.Products.Include(p => p.Seller).Include(p => p.Category).Include(p => p.Reviews).ThenInclude(r => r.Reviewer).FirstOrDefaultAsync(p => p.Id == id);
             return product;
         }
+        public async Task<List<Product>> GetByBuyerIdAsync(int buyerId)
+        {
+            var products = await _context.Products
+                .Include(p => p.Seller)
+                .Include(p => p.Category)
+                .Include(p => p.OrderItems)
+                .Where(p => p.OrderItems.Any(oi => oi.Order != null && oi.Order.BuyerId == buyerId && oi.Order.Status == "Delivered"))
+                .ToListAsync();
+            return products;
+        }
     }
 }
