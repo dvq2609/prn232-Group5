@@ -33,5 +33,12 @@ namespace backend.Controllers
             var productDto = _mapper.Map<ProductDto>(product);
             return Ok(productDto);
         }
+        [HttpGet("buyer/{buyerId}")]
+        public async Task<IActionResult> GetByBuyerId(int buyerId)
+        {
+            var products = await _productService.GetByBuyerIdAsync(buyerId);
+            var productDtos = _mapper.Map<List<ProductDto>>(products);
+            return Ok(productDtos);
+        }
     }
 }

@@ -6,6 +6,7 @@ namespace backend.Services
     {
         Task<List<Product>> GetAllAsync();
         Task<Product> GetByIdAsync(int id);
+        Task<List<Product>> GetByBuyerIdAsync(int buyerId);
 
     }
 }
