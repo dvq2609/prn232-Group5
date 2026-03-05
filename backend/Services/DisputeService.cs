@@ -1,6 +1,7 @@
 ﻿using backend.DTOs;
 using backend.Models;
 using backend.Repositories;
+using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Services
 {
@@ -15,7 +16,10 @@ namespace backend.Services
         {
             return await _disputeRepository.AddDispute(dispute, currentUserId);
         }
-
+        public async Task<DisputeDto> GetDisputeById(int id)
+        {
+            return await _disputeRepository.GetDisputeById(id);
+        }
         public async Task AddDisputeImages(List<DisputeImage> images)
         {
             await _disputeRepository.AddDisputeImages(images);

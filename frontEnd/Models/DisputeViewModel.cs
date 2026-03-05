@@ -27,5 +27,6 @@ namespace frontEnd.Models
         public DateTime? SolvedDate { get; set; }
         public string? Comment { get; set; }
         public List<ImageViewModel>? Images { get; set; }
+ 
     }
 }

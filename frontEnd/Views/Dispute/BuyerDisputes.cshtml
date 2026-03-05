@@ -78,7 +78,28 @@
                     <p class="text-xs text-gray-500 mt-1">Đã giải quyết</p>
                 </div>
             </div>
-
+            @*Filter by status and submit date*@
+            <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden mb-6">
+                <div class="flex items-center gap-4 p-4">
+                    <div class="flex items-center gap-2">
+                        <label for="statusFilter" class="text-sm font-medium text-gray-700">Trạng thái:</label>
+                        <select id="statusFilter" class="border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer outline-none focus:ring-2 focus:ring-blue-500" onchange="filterDisputes()">
+                            <option value="all">Tất cả</option>
+                            <option value="pending">Đang xử lý</option>
+                            <option value="resolved">Đã giải quyết</option>
+                            <option value="rejected">Bị từ chối</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <label for="dateFilter" class="text-sm font-medium text-gray-700">Ngày tạo:</label>
+                        <select id="dateFilter" class="border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer outline-none focus:ring-2 focus:ring-blue-500" onchange="filterDisputes()">
+                            <option value="all">Tất cả</option>
+                            <option value="30">30 ngày qua</option>
+                            <option value="60">60 ngày qua</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
             @* Dispute list *@
             <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                 <table class="w-full text-sm">
@@ -98,6 +119,8 @@
                                 ảnh</th>
                             <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 Trạng thái</th>
+                            <th class="text-center px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                Hành động</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -106,17 +129,18 @@
                             // Status badge config
                             string badgeClass;
                             string statusLabel;
+                            string mappedStatus = "all";
                             var s = dispute.Status?.ToLower() ?? "";
                             if (s == "pending" || s == "open")
-                            { badgeClass = "bg-yellow-100 text-yellow-700"; statusLabel = "Đang xử lý"; }
+                            { badgeClass = "bg-yellow-100 text-yellow-700"; statusLabel = "Đang xử lý"; mappedStatus = "pending"; }
                             else if (s == "resolved" || s == "closed")
-                            { badgeClass = "bg-green-100 text-green-700"; statusLabel = "Đã giải quyết"; }
+                            { badgeClass = "bg-green-100 text-green-700"; statusLabel = "Đã giải quyết"; mappedStatus = "resolved"; }
                             else if (s == "rejected")
-                            { badgeClass = "bg-red-100 text-red-700"; statusLabel = "Bị từ chối"; }
+                            { badgeClass = "bg-red-100 text-red-700"; statusLabel = "Bị từ chối"; mappedStatus = "rejected"; }
                             else
-                            { badgeClass = "bg-gray-100 text-gray-600"; statusLabel = dispute.Status ?? "—"; }
+                            { badgeClass = "bg-gray-100 text-gray-600"; statusLabel = dispute.Status ?? "—"; mappedStatus = s; }
 
-                            <tr class="hover:bg-gray-50 transition-colors">
+                            <tr class="hover:bg-gray-50 transition-colors dispute-row" data-status="@mappedStatus" data-date="@(dispute.SubmittedDate?.ToString("yyyy-MM-dd"))">
                                 <td class="px-5 py-4 font-mono text-gray-700 font-semibold">#@dispute.DisputeId</td>
                                 <td class="px-5 py-4">
                                     <p class="font-medium text-gray-800">@(dispute.ProductTitle ?? "—")</p>
@@ -155,6 +179,10 @@
                                         @statusLabel
                                     </span>
                                 </td>
+                                <td class="px-5 py-4 text-center">
+                                    <button type="button" onclick="openDisputeModal(@dispute.DisputeId)"
+                                        class="text-blue-600 hover:text-blue-800 font-medium">Xem chi tiết</button>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -162,4 +190,129 @@
             </div>
         }
     </div>
+
+    <!-- Dispute Detail Modal -->
+    <div id="disputeModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeModal()"></div>
+
+            <!-- Trick browser into centering modal -->
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <!-- Modal panel -->
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="flex justify-between items-center border-b pb-3 mb-4">
+                        <h3 class="text-xl leading-6 font-bold text-gray-900" id="modal-title">
+                            Chi Tiết Khiếu Nại
+                        </h3>
+                        <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center" onclick="closeModal()">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>  
+                        </button>
+                    </div>
+                    <div id="modalContent">
+                        <!-- Content will be loaded here via AJAX -->
+                        <div class="flex justify-center py-8">
+                            <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="button" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm" onclick="closeModal()">
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function filterDisputes() {
+            var statusFilter = document.getElementById('statusFilter');
+            var dateFilter = document.getElementById('dateFilter');
+            
+            // Only proceed if elements exist
+            if (!statusFilter || !dateFilter) return;
+
+            var statusVal = statusFilter.value;
+            var dateVal = dateFilter.value;
+            var rows = document.querySelectorAll('.dispute-row');
+            
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            rows.forEach(function(row) {
+                var show = true;
+                
+                // Check status
+                if (statusVal !== 'all' && row.getAttribute('data-status') !== statusVal) {
+                    show = false;
+                }
+                
+                // Check date
+                if (show && dateVal !== 'all') {
+                    var dateStr = row.getAttribute('data-date');
+                    if (dateStr) {
+                        var rowDate = new Date(dateStr);
+                        rowDate.setHours(0, 0, 0, 0);
+                        var diffTime = today - rowDate; // Use simply difference since today > rowDate expected
+                        var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        
+                        if (dateVal === '30' && diffDays > 30) {
+                            show = false;
+                        } else if (dateVal === '60' && diffDays > 60) {
+                            show = false;
+                        }
+                    }
+                }
+                
+                if (show) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+        
+        // Initialize filter on load
+        document.addEventListener('DOMContentLoaded', filterDisputes);
+
+        function openDisputeModal(disputeId) {
+            var modal = document.getElementById('disputeModal');
+            var content = document.getElementById('modalContent');
+            
+            // Show modal
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent scrolling
+            
+            // Show loading placeholder
+            content.innerHTML = '<div class="flex justify-center py-8"><svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg></div>';
+            
+            // Fetch partially loaded view
+            fetch('/Dispute/Details/' + disputeId)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    content.innerHTML = html;
+                })
+                .catch(error => {
+                    content.innerHTML = '<div class="text-red-600 p-4 text-center">Đã xảy ra lỗi khi tải chi tiết khiếu nại. Vui lòng thử lại.</div>';
+                    console.error('Error fetching dispute details:', error);
+                });
+        }
+        
+        function closeModal() {
+            var modal = document.getElementById('disputeModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+    </script>
 </body>

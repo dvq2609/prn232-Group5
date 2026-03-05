@@ -3,12 +3,14 @@ using AutoMapper;
 using backend.DTOs;
 using backend.Models;
 using backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers
 {
     [ApiController]
     [Route("api/disputes")]
+    [Authorize]
     public class DisputeController : Controller
     {
         private readonly IDisputeService _disputeService;
@@ -24,6 +26,17 @@ namespace backend.Controllers
         {
             var disputes = await _disputeService.GetAllDisputes();
             return Ok(disputes);
+        }
+        [HttpGet("{id}")]
+
+        public async Task<IActionResult> GetDisputeById([FromRoute] int id)
+        {
+            if (id <= 0)
+            {
+                return BadRequest("id không hợp lệ");
+            }
+            var dispute = await _disputeService.GetDisputeById(id);
+            return Ok(dispute);
         }
         [HttpGet("buyer/{buyerId}")]
         public async Task<IActionResult> GetDisputesByBuyerId(int buyerId)

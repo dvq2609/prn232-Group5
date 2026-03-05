@@ -184,6 +184,46 @@ namespace frontEnd.Controllers
             return View(disputes);
 
         }
+        public async Task<IActionResult> Details(int id)
+        {
+            DisputeResponse dispute = new DisputeResponse();
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                var token = HttpContext.Session.GetString("Token");
+                var role = HttpContext.Session.GetString("Role");
+                var accountId = HttpContext.Session.GetString("AccountId");
+                if (role != "buyer" && role != "seller")
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+                var response = await client.GetAsync($"https://localhost:7290/api/disputes/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var data = await response.Content.ReadFromJsonAsync<DisputeResponse>();
+                    if (data != null)
+                    {
+                        dispute = data;
+                        Console.WriteLine(dispute.ProductTitle);
+                        Console.WriteLine(dispute.SellerName);
+                        Console.WriteLine(dispute.Description);
+                        Console.WriteLine(dispute.Status);
+                        Console.WriteLine(dispute.OrderId);
+                        Console.WriteLine(dispute.SubmittedDate?.ToString("dd/MM/yyyy") ?? "null");
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+            return PartialView("_DisputeDetails", dispute);
+        }
 
     }
 }
