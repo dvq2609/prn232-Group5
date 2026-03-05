@@ -13,7 +13,6 @@ namespace backend.Mapping
             // ✅ Phải có dòng này trước khi Product map dùng Reviews
             CreateMap<Review, ReviewDto>()
                 .ForMember(dest => dest.ReviewerUsername,
-                    opt => opt.MapFrom(src => src.Reviewer != null ? src.Reviewer.Username : "Anonymous"));
                     opt => opt.MapFrom(src => src.Reviewer != null ? src.Reviewer.Username : "Anonymous"))
                 .ForMember(dest => dest.Productname,
                     opt => opt.MapFrom(src => src.Product != null ? src.Product.Title : null));
