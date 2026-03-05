@@ -16,6 +16,11 @@ namespace backend.Services
             return await _disputeRepository.AddDispute(dispute, currentUserId);
         }
 
+        public async Task AddDisputeImages(List<DisputeImage> images)
+        {
+            await _disputeRepository.AddDisputeImages(images);
+        }
+
         public Task DeleteDispute(int id)
         {
             throw new NotImplementedException();

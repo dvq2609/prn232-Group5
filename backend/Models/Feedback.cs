@@ -15,5 +15,9 @@ public partial class Feedback
 
     public decimal? PositiveRate { get; set; }
 
+    public int? OrdersId { get; set; }
+
+    public string? Comment { get; set; }
+
     public virtual User? Seller { get; set; }
 }

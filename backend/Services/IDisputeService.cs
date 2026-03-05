@@ -11,6 +11,7 @@ namespace backend.Services
         Task<Dispute> AddDispute(DisputeCreateDto dispute, int currentUserId);
         Task UpdateDispute(Dispute dispute);
         Task DeleteDispute(int id);
+        Task AddDisputeImages(List<DisputeImage> images);
 
     }
 }
