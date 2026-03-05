@@ -9,5 +9,24 @@ namespace frontEnd.Models
         public string? ProductTitle { get; set; }
         public string? Description { get; set; }
         public string? SellerName { get; set; }
+        public DateTime? SubmittedDate { get; set; }
+        public DateTime? SolvedDate { get; set; }
+        public string? Comment { get; set; }
+        public List<IFormFile>? Images { get; set; }
+    }
+    public class DisputeResponse
+    {
+        public int DisputeId { get; set; }
+        public int? OrderId { get; set; }
+        public string? Status { get; set; }
+        public string? UserDispute { get; set; }
+        public string? ProductTitle { get; set; }
+        public string? Description { get; set; }
+        public string? SellerName { get; set; }
+        public DateTime? SubmittedDate { get; set; }
+        public DateTime? SolvedDate { get; set; }
+        public string? Comment { get; set; }
+        public List<ImageViewModel>? Images { get; set; }
+ 
     }
 }

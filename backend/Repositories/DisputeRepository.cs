@@ -34,6 +34,7 @@ namespace backend.Repositories
                 Description = disputeDto.Description,
                 RaisedBy = currentUserId,
                 Status = "Pending",
+                SubmittedDate = DateTime.Now,
             };
             await _context.Disputes.AddAsync(newDispute);
             await _context.SaveChangesAsync();
@@ -56,7 +57,18 @@ namespace backend.Repositories
                 UserDispute = d.RaisedByNavigation.Username,
                 ProductTitle = d.Order.OrderItems.Select(oi => oi.Product.Title).FirstOrDefault(),
                 Description = d.Description,
-                SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault()
+                SubmittedDate = d.SubmittedDate,
+                SolvedDate = d.SolvedDate,
+                Comment = d.Comment,
+                SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
+                Images = d.DisputeImages.Select(i => new ImageDto
+                {
+                    Id = i.Id,
+                    FileName = i.FileName,
+                    FilePath = i.FilePath,
+                    FileExtension = i.FileExtension,
+                    FileSizeInBytes = i.FileSizeInBytes ?? 0
+                }).ToList()
             })
             .ToListAsync();
             return dispute;
@@ -73,7 +85,18 @@ namespace backend.Repositories
                 UserDispute = d.RaisedByNavigation.Username,
                 ProductTitle = d.Order.OrderItems.Select(oi => oi.Product.Title).FirstOrDefault(),
                 Description = d.Description,
-                SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault()
+                SubmittedDate = d.SubmittedDate,
+                SolvedDate = d.SolvedDate,
+                Comment = d.Comment,
+                SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
+                Images = d.DisputeImages.Select(i => new ImageDto
+                {
+                    Id = i.Id,
+                    FileName = i.FileName,
+                    FilePath = i.FilePath,
+                    FileExtension = i.FileExtension,
+                    FileSizeInBytes = i.FileSizeInBytes ?? 0
+                }).ToList()
             })
             .ToListAsync();
             return disputes;
@@ -95,9 +118,48 @@ namespace backend.Repositories
                 UserDispute = d.RaisedByNavigation.Username,
                 ProductTitle = d.Order.OrderItems.Select(oi => oi.Product.Title).FirstOrDefault(),
                 Description = d.Description,
-                SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault()
+                SubmittedDate = d.SubmittedDate,
+                SolvedDate = d.SolvedDate,
+                Comment = d.Comment,
+                SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
+                Images = d.DisputeImages.Select(i => new ImageDto
+                {
+                    Id = i.Id,
+                    FileName = i.FileName,
+                    FilePath = i.FilePath,
+                    FileExtension = i.FileExtension,
+                    FileSizeInBytes = i.FileSizeInBytes ?? 0
+                }).ToList()
             }).ToListAsync();
             return disputes;
+        }
+
+        public async Task<DisputeDto> GetDisputeById(int id)
+        {
+            var dispute = await _context.Disputes.Include(d => d.RaisedByNavigation).Include(d => d.Order).ThenInclude(o => o.OrderItems).ThenInclude(oi => oi.Product)
+            .Select(d => new DisputeDto
+            {
+                DisputeId = d.Id,
+                OrderId = d.OrderId,
+                Status = d.Status,
+                UserDispute = d.RaisedByNavigation.Username,
+                ProductTitle = d.Order.OrderItems.Select(oi => oi.Product.Title).FirstOrDefault(),
+                Description = d.Description,
+                SubmittedDate = d.SubmittedDate,
+                SolvedDate = d.SolvedDate,
+                Comment = d.Comment,
+                SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
+                Images = d.DisputeImages.Select(i => new ImageDto
+                {
+                    Id = i.Id,
+                    FileName = i.FileName,
+                    FilePath = i.FilePath,
+                    FileExtension = i.FileExtension,
+                    FileSizeInBytes = i.FileSizeInBytes ?? 0
+                }).ToList()
+            })
+            .FirstOrDefaultAsync(d => d.DisputeId == id);
+            return dispute;
         }
 
         public Task UpdateDispute(Dispute dispute)
@@ -108,6 +170,15 @@ namespace backend.Repositories
         {
             return await _context.Disputes
                 .AnyAsync(d => d.OrderId == orderId && d.Status == "Pending");
+        }
+
+        public async Task AddDisputeImages(List<DisputeImage> images)
+        {
+            if (images != null && images.Any())
+            {
+                await _context.DisputeImages.AddRangeAsync(images);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

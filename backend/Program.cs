@@ -63,6 +63,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles(); // Cho phép serve file trong wwwroot
 app.UseAuthentication();
 app.UseAuthorization();
 
