@@ -51,12 +51,12 @@ namespace backend.Repositories.Review
                 .FirstOrDefaultAsync(r => r.ReviewerId == reviewerId && r.ProductId == productId);
         }
 
-        // Kiểm tra user đã mua và nhận hàng chưa (order status = "Delivered" hoặc "Completed")
+        // Kiểm tra user đã mua và nhận hàng chưa (order status = "Delivered"/"delivered"/"Completed")
         public async Task<bool> HasCompletedOrderAsync(int reviewerId, int productId)
         {
             return await _context.OrderTables
                 .AnyAsync(o => o.BuyerId == reviewerId
-                    && (o.Status == "Delivered" || o.Status == "Completed")
+                    && (o.Status == "Delivered" || o.Status == "delivered" || o.Status == "Completed")
                     && o.OrderItems.Any(oi => oi.ProductId == productId));
         }
 
