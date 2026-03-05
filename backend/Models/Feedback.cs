@@ -15,5 +15,13 @@ public partial class Feedback
 
     public decimal? PositiveRate { get; set; }
 
+    public int? OrdersId { get; set; }
+
+    public string? Comment { get; set; }
+
     public virtual User? Seller { get; set; }
+
+    public virtual OrderTable? Orders { get; set; }
+
+    public virtual ICollection<DetailFeedback> DetailFeedbacks { get; set; } = new List<DetailFeedback>();
 }

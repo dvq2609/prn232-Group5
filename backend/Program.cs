@@ -5,6 +5,10 @@ using backend.Mapping;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using backend.Repositories;
 using backend.Services;
+using backend.Repositories.Review;
+using backend.Services.Review;
+using backend.Repositories.Order;
+using backend.Services.Order;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -21,6 +25,12 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
+
+builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+builder.Services.AddScoped<IReviewService, ReviewService>();
+
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 builder.Services.AddAuthentication(options =>

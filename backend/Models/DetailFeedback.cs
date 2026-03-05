@@ -14,4 +14,6 @@ public partial class DetailFeedback
     public int? Communication { get; set; }
 
     public int FeedbackId { get; set; }
+
+    public virtual Feedback Feedback { get; set; } = null!;
 }

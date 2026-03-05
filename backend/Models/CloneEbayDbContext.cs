@@ -176,6 +176,10 @@ public partial class CloneEbayDbContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.FeedbackId).HasColumnName("feedbackId");
+
+            entity.HasOne(d => d.Feedback).WithMany(p => p.DetailFeedbacks)
+                .HasForeignKey(d => d.FeedbackId)
+                .HasConstraintName("FK_DetailFeedback_Feedback");
         });
 
         modelBuilder.Entity<Dispute>(entity =>
@@ -214,10 +218,13 @@ public partial class CloneEbayDbContext : DbContext
 
             entity.HasIndex(e => e.SellerId, "IX_Feedback_sellerId");
 
+            entity.HasIndex(e => e.OrdersId, "IX_Feedback_OrdersId");
+
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AverageRating)
                 .HasColumnType("decimal(3, 2)")
                 .HasColumnName("averageRating");
+            entity.Property(e => e.Comment).HasColumnName("comment");
             entity.Property(e => e.PositiveRate)
                 .HasColumnType("decimal(5, 2)")
                 .HasColumnName("positiveRate");
@@ -227,6 +234,10 @@ public partial class CloneEbayDbContext : DbContext
             entity.HasOne(d => d.Seller).WithMany(p => p.Feedbacks)
                 .HasForeignKey(d => d.SellerId)
                 .HasConstraintName("FK__Feedback__seller__66603565");
+
+            entity.HasOne(d => d.Orders).WithMany(p => p.Feedbacks)
+                .HasForeignKey(d => d.OrdersId)
+                .HasConstraintName("FK_Feedback_OrderTable_OrdersId");
         });
 
         modelBuilder.Entity<Inventory>(entity =>
@@ -318,6 +329,7 @@ public partial class CloneEbayDbContext : DbContext
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasColumnName("status");
+            entity.Property(e => e.IsCommented).HasColumnName("isCommented");
             entity.Property(e => e.TotalPrice)
                 .HasColumnType("decimal(10, 2)")
                 .HasColumnName("totalPrice");
