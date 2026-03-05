@@ -1,4 +1,10 @@
-﻿<!DOCTYPE html>
+﻿@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var email = HttpContextAccessor.HttpContext.Session.GetString("Email");
+    var role = HttpContextAccessor.HttpContext.Session.GetString("Role");
+    var accountId = HttpContextAccessor.HttpContext.Session.GetInt32("AccountId");
+}
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -19,14 +25,31 @@
     <div class="bg-white border-b border-gray-200">
         <div class="max-w-[1300px] mx-auto px-4 py-2 flex justify-between items-center text-xs">
             <div class="flex items-center space-x-4">
-                <span class="text-gray-600"> <strong>
+                <span class="text-gray-600">Hi <strong>
+                        @if (!string.IsNullOrEmpty(email))
+                        {
+                            @email
+                        }
+                        else
+                        {
+                            <span> <a href="~/Auth/Login">Sign in</a>!</span>
+                        }
 
-                        <a asp-action="Login" asp-controller="Auth">Login</a>
+
 
                     </strong></span>
                 <a class="hover:underline" asp-action="Logout" asp-controller="Auth">Logout</a>
                 <a class="hover:underline" href="#">Daily Deals</a>
                 <a class="hover:underline" href="#">Help &amp; Contact</a>
+                <a class="hover:underline" asp-action="Create" asp-controller="Dispute">Send dispute</a>
+                @if (role == "buyer")
+                {
+                    <a class="hover:underline" asp-action="BuyerDisputes" asp-controller="Dispute">Buyer Disputes</a>
+                }
+                else if (role == "seller")
+                {
+                    <a class="hover:underline" asp-action="SellerDisputes" asp-controller="Dispute">Seller Disputes</a>
+                }
 
             </div>
             <div class="flex items-center space-x-6">
@@ -50,8 +73,10 @@
     <header class="bg-white sticky top-0 z-50">
         <div class="max-w-[1300px] mx-auto px-4 py-3 flex items-center gap-3">
             <div class="flex-shrink-0">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/1/1b/EBay_logo.svg" alt="eBay"
-                    class="h-10 w-auto" />
+                <a asp-action="Index" asp-controller="Home">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/1b/EBay_logo.svg" alt="eBay"
+                        class="h-10 w-auto" />
+                </a>
             </div>
             <div class="flex-grow flex items-center min-w-0">
                 <div class="relative flex-grow flex items-center border-2 border-gray-800">

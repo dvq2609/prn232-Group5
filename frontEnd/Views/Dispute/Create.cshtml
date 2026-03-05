@@ -1,0 +1,525 @@
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    ViewData["Title"] = "Mở Khiếu Nại Mới";
+    var accountId = HttpContextAccessor.HttpContext?.Session?.GetString("AccountId") ?? "0";
+}
+
+<head>
+    <meta charset="utf-8" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .order-item.selected {
+            background-color: #eff6ff;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 1px #60a5fa;
+            position: relative;
+            z-index: 10;
+        }
+
+        .step {
+            display: none;
+        }
+
+        .step.active {
+            display: block;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .radio-option:hover {
+            background-color: #f9fafb;
+        }
+
+        .radio-option.selected {
+            background-color: #eff6ff;
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 1px #60a5fa;
+        }
+
+        .radio-dot {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid #d1d5db;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .radio-option.selected .radio-dot {
+            border-color: #2563eb;
+            background-color: #2563eb;
+        }
+
+        .radio-option.selected .radio-dot::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: white;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-4xl bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+
+        @* Header *@
+        <div class="p-6 border-b border-gray-100">
+            <h1 class="text-2xl font-semibold text-gray-900">Mở Khiếu Nại Mới</h1>
+            <p class="text-gray-500 mt-1">Chúng tôi sẽ giúp bạn giải quyết vấn đề với đơn hàng.</p>
+        </div>
+
+        <div class="p-6 pt-4">
+
+            @* Progress Bar *@
+            <div class="mb-8">
+                <div class="w-full bg-gray-100 rounded-full h-6 relative overflow-hidden">
+                    <div id="progressBar"
+                        class="bg-blue-600 h-full flex items-center justify-center text-[10px] font-bold text-white transition-all duration-500"
+                        style="width: 16.67%">
+                        Bước 1/6
+                    </div>
+                </div>
+            </div>
+
+            @* ====== STEP 1: Chọn đơn hàng ====== *@
+            <div id="step1" class="step active">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Bước 1: Chọn đơn hàng bạn muốn khiếu nại</h2>
+                    <p class="text-gray-500 mt-2 text-sm">Chỉ các đơn hàng đã giao hoặc đang giao mới được hiển thị.</p>
+                </div>
+
+                <div id="orderList" class="space-y-0 border border-gray-100 rounded-md overflow-hidden mb-6">
+                    @if (ViewBag.Orders != null)
+                    {
+                        bool isFirst = true;
+                        foreach (var order in (IEnumerable<dynamic>)ViewBag.Orders)
+                        {
+                            string rowClass = isFirst
+                            ? "order-item selected p-4 cursor-pointer transition-colors border-b border-gray-100"
+                            : "order-item p-4 cursor-pointer transition-colors border-b border-gray-100 hover:bg-gray-50";
+                            string titleClass = isFirst ? "font-bold text-gray-900" : "font-bold text-gray-700";
+                            isFirst = false;
+                            <div onclick="selectOrder(this, @order.OrderId)" class="@rowClass" data-order-id="@order.OrderId">
+                                <div class="flex flex-col">
+                                    <span class="@titleClass">@order.ProductTitle</span>
+                                    <div class="text-sm text-gray-600 mt-1">
+                                        <span class="font-medium">Đơn hàng: #@order.OrderId</span>
+                                        <span class="mx-1">|</span>
+                                        <span>Người bán: @order.SellerName</span>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        <span class="font-bold">Ngày đặt: @order.OrderDate</span>
+                                        <span class="ml-1">(Trạng thái: <span
+                                                class="text-blue-600 font-semibold">@order.Status</span>)</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        @* Dữ liệu mẫu *@
+                        <div onclick="selectOrder(this, 11)"
+                            class="order-item selected p-4 cursor-pointer transition-colors border-b border-gray-100"
+                            data-order-id="11">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-gray-900">Túi Xách Tay Nữ Da PU</span>
+                                <div class="text-sm text-gray-600 mt-1">
+                                    <span class="font-medium">Đơn hàng: #11</span>
+                                    <span class="mx-1">|</span>
+                                    <span>Người bán: Mary Fashion</span>
+                                </div>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    <span class="font-bold">Ngày đặt: 3/3/2026</span>
+                                    <span class="ml-1">(Trạng thái: <span
+                                            class="text-blue-600 font-semibold">delivered</span>)</span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="flex justify-end">
+                    <button onclick="goToStep(2)"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-md">
+                        Tiếp theo
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            @* ====== STEP 2: Lý do khiếu nại ====== *@
+            <div id="step2" class="step">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Bước 2: Lý do bạn khiếu nại là gì?</h2>
+                    <p class="text-gray-500 mt-2 text-sm">
+                        Bạn đang khiếu nại cho đơn hàng: <span id="step2OrderLabel"
+                            class="font-semibold text-gray-800"></span>
+                    </p>
+                </div>
+
+                <div class="space-y-3 mb-8">
+                    <div class="radio-option" id="reason-not-received" onclick="selectReason('not_received')">
+                        <div class="radio-dot"></div>
+                        <span class="text-sm font-medium text-gray-700">Tôi không nhận được hàng</span>
+                    </div>
+                    <div class="radio-option" id="reason-not-described" onclick="selectReason('not_as_described')">
+                        <div class="radio-dot"></div>
+                        <span class="text-sm font-medium text-gray-700">Sản phẩm không đúng như mô tả</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-between">
+                    <button onclick="goToStep(1)"
+                        class="border border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 12H5" />
+                            <path d="m12 19-7-7 7-7" />
+                        </svg>
+                        Quay lại
+                    </button>
+                    <button onclick="goToStep(3)"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-md">
+                        Tiếp theo
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            @* ====== STEP 3: Chi tiết vấn đề ====== *@
+            <div id="step3" class="step">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Bước 3: Cung cấp thêm chi tiết</h2>
+                </div>
+
+                @* Cảnh báo chỉ hiện khi chọn "không nhận được hàng" *@
+                <div id="warningNotReceived"
+                    class="hidden mb-4 bg-yellow-50 border border-yellow-200 rounded-lg px-4 py-3 text-sm text-yellow-800">
+                    Vui lòng kiểm tra lại với người thân hoặc hàng xóm. Nếu bạn chắc chắn chưa nhận được, hãy tiếp tục.
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">
+                        Nội dung khiếu nại <span class="font-normal text-gray-500">(bắt buộc):</span>
+                    </label>
+                    <textarea id="description" rows="5"
+                        class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                        placeholder="Mô tả rõ vấn đề bạn gặp phải với đơn hàng này..."></textarea>
+                    <p class="text-xs text-gray-400 mt-1">Tối thiểu 20 ký tự.</p>
+                </div>
+
+                <div class="flex justify-between">
+                    <button onclick="goToStep(2)"
+                        class="border border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 12H5" />
+                            <path d="m12 19-7-7 7-7" />
+                        </svg>
+                        Quay lại
+                    </button>
+                    <button onclick="goToStep(4)"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-md">
+                        Tiếp theo
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            @* ====== STEP 4: Giải pháp mong muốn ====== *@
+            <div id="step4" class="step">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Bước 4: Bạn mong muốn giải pháp gì?</h2>
+                </div>
+
+                <div class="space-y-3 mb-8">
+                    <div class="radio-option selected" id="solution-full-refund"
+                        onclick="selectSolution('full_refund')">
+                        <div class="radio-dot"></div>
+                        <span class="text-sm font-medium text-gray-700">Hoàn tiền 100%</span>
+                    </div>
+                    <div class="radio-option" id="solution-partial-refund" onclick="selectSolution('partial_refund')">
+                        <div class="radio-dot"></div>
+                        <span class="text-sm font-medium text-gray-700">Hoàn tiền một phần</span>
+                    </div>
+                    <div class="radio-option" id="solution-resend" onclick="selectSolution('resend')">
+                        <div class="radio-dot"></div>
+                        <span class="text-sm font-medium text-gray-700">Gửi hàng thay thế</span>
+                    </div>
+                </div>
+
+                <div id="step4Error"
+                    class="hidden mb-4 bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700"></div>
+
+                <div class="flex justify-between">
+                    <button onclick="goToStep(3)"
+                        class="border border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 12H5" />
+                            <path d="m12 19-7-7 7-7" />
+                        </svg>
+                        Quay lại
+                    </button>
+                    <button onclick="goToStep(5)"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-md">
+                        Tiếp theo
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            @* ====== STEP 5: Xác nhận ====== *@
+            <div id="step5" class="step">
+                <div class="mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Bước 5: Xác nhận thông tin</h2>
+                    <p class="text-gray-500 mt-2 text-sm">Vui lòng kiểm tra lại thông tin trước khi gửi.</p>
+                </div>
+
+                <div class="bg-gray-50 border border-gray-200 rounded-lg p-5 mb-6 space-y-3 text-sm">
+                    <div class="flex gap-3">
+                        <span class="text-gray-500 w-40 shrink-0">Đơn hàng:</span>
+                        <span id="confirmOrder" class="font-semibold text-gray-900">—</span>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-gray-500 w-40 shrink-0">Lý do:</span>
+                        <span id="confirmReason" class="font-semibold text-gray-900">—</span>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-gray-500 w-40 shrink-0">Mô tả:</span>
+                        <span id="confirmDesc" class="text-gray-700 whitespace-pre-wrap">—</span>
+                    </div>
+                    <div class="flex gap-3">
+                        <span class="text-gray-500 w-40 shrink-0">Giải pháp mong muốn:</span>
+                        <span id="confirmSolution" class="font-semibold text-gray-900">—</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-between">
+                    <button onclick="goToStep(4)"
+                        class="border border-gray-300 text-gray-700 hover:bg-gray-50 px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M19 12H5" />
+                            <path d="m12 19-7-7 7-7" />
+                        </svg>
+                        Quay lại
+                    </button>
+                    <button onclick="submitDispute()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-md">
+                        Gửi khiếu nại
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M5 12h14" />
+                            <path d="m12 5 7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            @* ====== STEP 6: Thành công ====== *@
+            <div id="step6" class="step">
+                <div class="flex flex-col items-center justify-center py-12 text-center">
+                    <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none"
+                            stroke="#16a34a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900 mb-2">Khiếu nại đã được gửi!</h2>
+                    <p class="text-gray-500 mb-2">Chúng tôi đã nhận được khiếu nại của bạn.</p>
+                    <p class="text-sm text-gray-400 mb-8">
+                        Mã khiếu nại: <span id="disputeId" class="font-bold text-gray-700">#—</span>
+                    </p>
+                    <div class="flex gap-3">
+                        <a asp-action="Index" asp-controller="Home"
+                            class="border border-gray-300 text-gray-700 hover:bg-gray-50 px-5 py-2.5 rounded-lg font-semibold text-sm transition-all">
+                            Về trang chủ
+                        </a>
+                        <a asp-action="Create" asp-controller="Dispute"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-md">
+                            Tạo khiếu nại mới
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+<script>
+    var selectedOrderId = null;
+    var selectedOrderLabel = '';
+    var selectedReason = null;
+    var selectedSolution = 'full_refund'; // default
+    var currentAccountId = parseInt('@accountId') || 0;
+
+    var reasonLabels = {
+        'not_received': 'Tôi không nhận được hàng',
+        'not_as_described': 'Sản phẩm không đúng như mô tả'
+    };
+    var solutionLabels = {
+        'full_refund': 'Hoàn tiền 100%',
+        'partial_refund': 'Hoàn tiền một phần',
+        'resend': 'Gửi hàng thay thế'
+    };
+
+    // Khởi tạo: chọn sẵn phần tử đầu tiên
+    (function () {
+        var first = document.querySelector('.order-item.selected');
+        if (first) {
+            selectedOrderId = first.dataset.orderId;
+            var titleEl = first.querySelector('.font-bold');
+            selectedOrderLabel = '#' + selectedOrderId + ' \u2013 ' + (titleEl ? titleEl.innerText : '');
+        }
+    })();
+
+    function selectOrder(element, orderId) {
+        document.querySelectorAll('.order-item').forEach(function (item) {
+            item.classList.remove('selected');
+            item.classList.add('hover:bg-gray-50');
+            var t = item.querySelector('.font-bold');
+            if (t) { t.classList.remove('text-gray-900'); t.classList.add('text-gray-700'); }
+        });
+        element.classList.add('selected');
+        element.classList.remove('hover:bg-gray-50');
+        var title = element.querySelector('.font-bold');
+        if (title) { title.classList.remove('text-gray-700'); title.classList.add('text-gray-900'); }
+        selectedOrderId = orderId;
+        selectedOrderLabel = '#' + orderId + ' \u2013 ' + (title ? title.innerText : '');
+    }
+
+    function selectReason(reason) {
+        selectedReason = reason;
+        document.querySelectorAll('#step2 .radio-option').forEach(function (el) {
+            el.classList.remove('selected');
+        });
+        var map = { 'not_received': 'reason-not-received', 'not_as_described': 'reason-not-described' };
+        document.getElementById(map[reason]).classList.add('selected');
+    }
+
+    function selectSolution(solution) {
+        selectedSolution = solution;
+        document.querySelectorAll('#step4 .radio-option').forEach(function (el) {
+            el.classList.remove('selected');
+        });
+        var map = { 'full_refund': 'solution-full-refund', 'partial_refund': 'solution-partial-refund', 'resend': 'solution-resend' };
+        document.getElementById(map[solution]).classList.add('selected');
+    }
+
+    var progressWidths = ['16.67%', '33.33%', '50%', '66.67%', '83.33%', '100%'];
+    var progressLabels = ['Bước 1/6', 'Bước 2/6', 'Bước 3/6', 'Bước 4/6', 'Bước 5/6', 'Bước 6/6'];
+
+    function goToStep(step) {
+        // Validation
+        if (step === 2 && !selectedOrderId) {
+            alert('Vui lòng chọn một đơn hàng.');
+            return;
+        }
+        if (step === 3) {
+            if (!selectedReason) {
+                alert('Vui lòng chọn lý do khiếu nại.');
+                return;
+            }
+            // Cập nhật label đơn hàng ở step 2
+            document.getElementById('step2OrderLabel').innerText = selectedOrderLabel;
+            // Hiện/ẩn cảnh báo
+            var warning = document.getElementById('warningNotReceived');
+            if (selectedReason === 'not_received') {
+                warning.classList.remove('hidden');
+            } else {
+                warning.classList.add('hidden');
+            }
+        }
+        if (step === 4) {
+            var desc = document.getElementById('description').value.trim();
+            if (desc.length < 20) {
+                alert('Vui lòng mô tả chi tiết hơn (tối thiểu 20 ký tự).');
+                return;
+            }
+        }
+        if (step === 5) {
+            // Populate xác nhận
+            document.getElementById('confirmOrder').innerText = selectedOrderLabel;
+            document.getElementById('confirmReason').innerText = reasonLabels[selectedReason] || '—';
+            document.getElementById('confirmDesc').innerText = document.getElementById('description').value.trim();
+            document.getElementById('confirmSolution').innerText = solutionLabels[selectedSolution] || '—';
+        }
+
+        document.querySelectorAll('.step').forEach(function (s) { s.classList.remove('active'); });
+        document.getElementById('step' + step).classList.add('active');
+        var bar = document.getElementById('progressBar');
+        bar.style.width = progressWidths[step - 1];
+        bar.innerText = progressLabels[step - 1];
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+        // Cập nhật label đơn hàng khi vào step 2
+        if (step === 2) {
+            document.getElementById('step2OrderLabel').innerText = selectedOrderLabel;
+        }
+    }
+
+    async function submitDispute() {
+        var description = document.getElementById('description').value.trim();
+        var payload = {
+            orderId: parseInt(selectedOrderId),
+            raisedBy: currentAccountId,
+            description: description + ' | Lý do: ' + (reasonLabels[selectedReason] || '') + ' | Giải pháp: ' + (solutionLabels[selectedSolution] || ''),
+            status: 'open'
+        };
+        try {
+            var res = await fetch('https://localhost:7290/api/disputes', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) {
+                var data = await res.json();
+                document.getElementById('disputeId').innerText = '#' + (data.id || '—');
+            } else {
+                var errText = await res.text();
+                document.getElementById('step4Error').innerText = 'Lỗi: ' + errText;
+                document.getElementById('step4Error').classList.remove('hidden');
+                return;
+            }
+        } catch (e) {
+            document.getElementById('disputeId').innerText = '#DEMO';
+        }
+        goToStep(6);
+    }
+</script>

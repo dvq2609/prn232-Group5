@@ -13,6 +13,12 @@ namespace backend.Services
         {
             return await _productRepository.GetAllAsync();
         }
+
+        public async Task<List<Product>> GetByBuyerIdAsync(int buyerId)
+        {
+            return await _productRepository.GetByBuyerIdAsync(buyerId);
+        }
+
         public async Task<Product> GetByIdAsync(int id)
         {
             return await _productRepository.GetByIdAsync(id);
