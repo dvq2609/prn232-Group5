@@ -5,6 +5,7 @@ using backend.Mapping;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using backend.Repositories;
 using backend.Services;
+using Sieve.Services;
 using backend.Repositories.Review;
 using backend.Services.Review;
 var builder = WebApplication.CreateBuilder(args);
@@ -33,6 +34,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IDisputeRepository, DisputeRepository>();
 builder.Services.AddScoped<IDisputeService, DisputeService>();
 
+builder.Services.AddScoped<ISieveProcessor, SieveProcessor>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 builder.Services.AddAuthentication(options =>
 {

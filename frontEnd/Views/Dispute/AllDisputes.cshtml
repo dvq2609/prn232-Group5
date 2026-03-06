@@ -1,7 +1,7 @@
 ﻿@model X.PagedList.IPagedList<frontEnd.Models.DisputeResponse>
 @using X.PagedList.Mvc.Core
 @{
-    ViewData["Title"] = "Khiếu Nại Của Tôi";
+    ViewData["Title"] = "Toàn bộ khiếu nại hệ thống";
 }
 
 <head>
@@ -18,7 +18,7 @@
 <body class="bg-gray-50 min-h-screen p-6">
     <div class="max-w-5xl mx-auto">
 
-     
+
 
         @* Empty state *@
         @if (Model == null || !Model.Any())
@@ -36,9 +36,9 @@
                 </div>
                 <h3 class="text-gray-700 font-semibold text-lg mb-1">Chưa có khiếu nại nào</h3>
                 <p class="text-gray-400 text-sm mb-6">
-                    Bạn chưa nhận được khiếu nại nào từ khách hàng. Khi có khiếu nại mới, chúng sẽ hiển thị ở đây để bạn theo dõi và xử lý kịp thời. 
+                    Chưa có khiếu nại nào được ghi nhận trong hệ thống. Khi có khiếu nại mới, chúng sẽ xuất hiện ở đây để bạn theo dõi và xử lý.
                 </p>
-               
+
             </div>
         }
         else
@@ -102,6 +102,9 @@
                                 Người gửi
                             </th>
                             <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                                Người bán
+                            </th>
+                            <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                                 Mô
                                 tả
                             </th>
@@ -145,6 +148,7 @@
                                     <p class="text-xs text-gray-400 mt-0.5">Đơn #@dispute.OrderId</p>
                                 </td>
                                 <td class="px-5 py-4 text-gray-600">@(dispute.RaisedBy ?? "—")</td>
+                                <td class="px-5 py-4 text-gray-600">@(dispute.SellerName ?? "—")</td>
                                 <td class="px-5 py-4 text-gray-600 max-w-xs">
                                     <p class="line-clamp-2 leading-snug" title="@dispute.Description">
                                         @(dispute.Description ?? "—")
@@ -192,7 +196,7 @@
             @if (Model != null && Model.PageCount > 1)
             {
                 <div class="mt-6 flex justify-center">
-                    @Html.PagedListPager(Model, page => Url.Action("SellerDisputes", new { page }),
+                    @Html.PagedListPager(Model, page => Url.Action("AllDisputes", new { page }),
                         new PagedListRenderOptions
                         {
                             LiElementClasses = new[] { "px-3", "py-2", "border", "border-gray-200", "bg-white", "text-sm", "font-medium", "text-gray-700", "hover:bg-gray-50", "rounded-md", "mx-1" },

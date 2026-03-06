@@ -5,6 +5,7 @@ using backend.Models;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Sieve.Models;
 
 namespace backend.Controllers
 {
@@ -22,9 +23,9 @@ namespace backend.Controllers
             _disputeService = disputeService;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllDisputes()
+        public async Task<IActionResult> GetAllDisputes([FromQuery] SieveModel sieveModel)
         {
-            var disputes = await _disputeService.GetAllDisputes();
+            var disputes = await _disputeService.GetAllDisputes(sieveModel);
             return Ok(disputes);
         }
         [HttpGet("{id}")]
@@ -39,23 +40,23 @@ namespace backend.Controllers
             return Ok(dispute);
         }
         [HttpGet("buyer/{buyerId}")]
-        public async Task<IActionResult> GetDisputesByBuyerId(int buyerId)
+        public async Task<IActionResult> GetDisputesByBuyerId(int buyerId, [FromQuery] SieveModel sieveModel)
         {
             if (buyerId <= 0)
             {
                 return BadRequest("buyerId không hợp lệ");
             }
-            var disputes = await _disputeService.GetDisputesByBuyerId(buyerId);
+            var disputes = await _disputeService.GetDisputesByBuyerId(buyerId, sieveModel);
             return Ok(disputes);
         }
         [HttpGet("seller/{sellerId}")]
-        public async Task<IActionResult> GetDisputesBySellerId(int sellerId)
+        public async Task<IActionResult> GetDisputesBySellerId(int sellerId, [FromQuery] SieveModel sieveModel)
         {
             if (sellerId <= 0)
             {
                 return BadRequest("sellerId không hợp lệ");
             }
-            var disputes = await _disputeService.GetDisputesBySellerId(sellerId);
+            var disputes = await _disputeService.GetDisputesBySellerId(sellerId, sieveModel);
             return Ok(disputes);
         }
         [HttpPost]

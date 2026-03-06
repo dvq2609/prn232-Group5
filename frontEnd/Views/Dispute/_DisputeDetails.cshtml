@@ -1,5 +1,8 @@
 @model frontEnd.Models.DisputeResponse
-
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var role = HttpContextAccessor.HttpContext.Session.GetString("Role");
+}
 <div class="space-y-6">
     <!-- Status and Header info -->
     <div class="flex justify-between items-start">
@@ -11,6 +14,7 @@
             {
                 <p class="text-sm text-gray-500">Mã đơn hàng: <span class="text-gray-800 font-medium">#@Model.OrderId</span></p>
             }
+         
         </div>
         <div>
             @{
@@ -22,6 +26,24 @@
                 else if (s == "rejected") { badgeClass = "bg-red-100 text-red-700"; statusLabel = "Bị từ chối"; }
             }
             <span class="px-3 py-1 rounded-full text-sm font-semibold @badgeClass">@statusLabel</span>
+        </div>
+        <div>
+            @if(role == "seller")
+            {
+                <button onclick="toggleChat()"
+                        class="ml-auto inline-flex items-center px-3 py-1 border border-primary text-primary rounded-full text-xs font-semibold hover:bg-primary/5 transition-colors">
+                    <span class="material-symbols-outlined text-sm mr-1">chat_bubble_outline</span>
+                    Chat with buyer
+                </button>
+            }
+            else if(role == "buyer")
+            {
+                <button onclick="toggleChat()"
+                        class="ml-auto inline-flex items-center px-3 py-1 border border-primary text-primary rounded-full text-xs font-semibold hover:bg-primary/5 transition-colors">
+                    <span class="material-symbols-outlined text-sm mr-1">chat_bubble_outline</span>
+                    Chat with seller
+                </button>
+            }
         </div>
     </div>
 
@@ -36,6 +58,16 @@
             <span class="font-medium text-gray-800">@(Model.SolvedDate?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa giải quyết")</span>
         </div>
     </div>
+    <!-- Resolution -->
+    @if(!string.IsNullOrEmpty(Model.Resolution))
+    {
+        <div>
+            <h4 class="font-semibold text-gray-800 mb-2 border-b pb-1">Chi tiết giải quyết</h4>
+            <p class="text-gray-700 whitespace-pre-line text-sm bg-white border border-gray-200 p-4 rounded-lg shadow-sm leading-relaxed">
+                @(string.IsNullOrWhiteSpace(Model.Description) ? "Không có mô tả" : Model.Resolution)
+            </p>
+        </div>
+    }
 
     <!-- Description -->
     <div>

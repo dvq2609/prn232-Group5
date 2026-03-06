@@ -48,6 +48,7 @@ namespace frontEnd.Controllers
 
             return View();
         }
+
         [HttpPost]
         public async Task<IActionResult> Create(DisputeViewModel dispute)
         {
@@ -98,9 +99,69 @@ namespace frontEnd.Controllers
             }
             return View();
         }
-        public async Task<IActionResult> BuyerDisputes()
+        public async Task<IActionResult> AllDisputes(int page = 1, int pageSize = 5)
         {
-            List<DisputeResponse> disputes = new List<DisputeResponse>();
+            X.PagedList.IPagedList<DisputeResponse> pagedDisputes = null;
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                var role = HttpContext.Session.GetString("Role");
+                var token = HttpContext.Session.GetString("Token");
+                var accountId = HttpContext.Session.GetString("AccountId");
+                if (role != "admin")
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+
+                var response = await client.GetAsync($"https://localhost:7290/api/disputes?page={page}&pageSize={pageSize}&sorts=-DisputeId");
+                var statsResponse = await client.GetAsync($"https://localhost:7290/api/disputes?page=1&pageSize=100000");
+
+                if (statsResponse.IsSuccessStatusCode)
+                {
+                    var statsData = await statsResponse.Content.ReadFromJsonAsync<PagedResult<DisputeResponse>>();
+                    if (statsData != null && statsData.Items != null)
+                    {
+                        ViewBag.Total = statsData.TotalCount;
+                        ViewBag.Pending = statsData.Items.Count(d => d.Status?.ToLower() == "pending" || d.Status?.ToLower() == "open");
+                        ViewBag.Resolved = statsData.Items.Count(d => d.Status?.ToLower() == "resolved" || d.Status?.ToLower() == "closed");
+                    }
+                }
+
+                if (response.IsSuccessStatusCode)
+                {
+                    //thay vì trả về list(toàn bộ dữ liệu ) thì trả về model phân trang
+                    var data = await response.Content.ReadFromJsonAsync<PagedResult<DisputeResponse>>();
+                    if (data != null && data.Items != null)
+                    {
+                        //chuyển dữ liệu thành pagedlist
+
+                        pagedDisputes = new X.PagedList.StaticPagedList<DisputeResponse>(
+                        // danh sách dữ liệu
+                        data.Items,
+                        // trang hiện tại
+                        data.CurrentPage,
+                        // số lượng item trong mỗi trang
+                        data.PageSize,
+                        // tổng số item
+                        data.TotalCount);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
+            pagedDisputes ??= new X.PagedList.StaticPagedList<DisputeResponse>(new List<DisputeResponse>(), page, pageSize, 0);
+            return View(pagedDisputes);
+        }
+        public async Task<IActionResult> BuyerDisputes(int page = 1, int pageSize = 5)
+        {
+            X.PagedList.IPagedList<DisputeResponse> pagedDisputes = null;
             try
             {
                 var client = _httpClientFactory.CreateClient();
@@ -115,21 +176,27 @@ namespace frontEnd.Controllers
                 {
                     client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 }
-                var response = await client.GetAsync($"https://localhost:7290/api/disputes/buyer/{accountId}");
+
+                var response = await client.GetAsync($"https://localhost:7290/api/disputes/buyer/{accountId}?page={page}&pageSize={pageSize}&sorts=-DisputeId");
+                var statsResponse = await client.GetAsync($"https://localhost:7290/api/disputes/buyer/{accountId}?page=1&pageSize=100000");
+
+                if (statsResponse.IsSuccessStatusCode)
+                {
+                    var statsData = await statsResponse.Content.ReadFromJsonAsync<PagedResult<DisputeResponse>>();
+                    if (statsData != null && statsData.Items != null)
+                    {
+                        ViewBag.Total = statsData.TotalCount;
+                        ViewBag.Pending = statsData.Items.Count(d => d.Status?.ToLower() == "pending" || d.Status?.ToLower() == "open");
+                        ViewBag.Resolved = statsData.Items.Count(d => d.Status?.ToLower() == "resolved" || d.Status?.ToLower() == "closed");
+                    }
+                }
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var data = await response.Content.ReadFromJsonAsync<List<DisputeResponse>>();
-                    if (data != null)
+                    var data = await response.Content.ReadFromJsonAsync<PagedResult<DisputeResponse>>();
+                    if (data != null && data.Items != null)
                     {
-                        disputes = data;
-                        foreach (var dispute in disputes)
-                        {
-                            Console.WriteLine(dispute.ProductTitle);
-                            Console.WriteLine(dispute.SellerName);
-                            Console.WriteLine(dispute.Description);
-                            Console.WriteLine(dispute.Status);
-                            Console.WriteLine(dispute.OrderId);
-                        }
+                        pagedDisputes = new X.PagedList.StaticPagedList<DisputeResponse>(data.Items, data.CurrentPage, data.PageSize, data.TotalCount);
                     }
                 }
             }
@@ -137,12 +204,13 @@ namespace frontEnd.Controllers
             {
                 Console.WriteLine(ex.Message);
             }
-            return View(disputes);
 
+            pagedDisputes ??= new X.PagedList.StaticPagedList<DisputeResponse>(new List<DisputeResponse>(), page, pageSize, 0);
+            return View(pagedDisputes);
         }
-        public async Task<IActionResult> SellerDisputes()
+        public async Task<IActionResult> SellerDisputes(int page = 1, int pageSize = 5)
         {
-            List<DisputeViewModel> disputes = new List<DisputeViewModel>();
+            X.PagedList.IPagedList<DisputeResponse> pagedDisputes = null;
             try
             {
                 var client = _httpClientFactory.CreateClient();
@@ -157,23 +225,27 @@ namespace frontEnd.Controllers
                 {
                     client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 }
-                var response = await client.GetAsync($"https://localhost:7290/api/disputes/seller/{accountId}");
+
+                var response = await client.GetAsync($"https://localhost:7290/api/disputes/seller/{accountId}?page={page}&pageSize={pageSize}&sorts=-DisputeId");
+                var statsResponse = await client.GetAsync($"https://localhost:7290/api/disputes/seller/{accountId}?page=1&pageSize=100000");
+
+                if (statsResponse.IsSuccessStatusCode)
+                {
+                    var statsData = await statsResponse.Content.ReadFromJsonAsync<PagedResult<DisputeResponse>>();
+                    if (statsData != null && statsData.Items != null)
+                    {
+                        ViewBag.Total = statsData.TotalCount;
+                        ViewBag.Pending = statsData.Items.Count(d => d.Status?.ToLower() == "pending" || d.Status?.ToLower() == "open");
+                        ViewBag.Resolved = statsData.Items.Count(d => d.Status?.ToLower() == "resolved" || d.Status?.ToLower() == "closed");
+                    }
+                }
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var data = await response.Content.ReadFromJsonAsync<List<DisputeViewModel>>();
-                    if (data != null)
+                    var data = await response.Content.ReadFromJsonAsync<PagedResult<DisputeResponse>>();
+                    if (data != null && data.Items != null)
                     {
-                        disputes = data;
-                        foreach (var dispute in disputes)
-                        {
-                            Console.WriteLine(dispute.ProductTitle);
-                            Console.WriteLine(dispute.SellerName);
-                            Console.WriteLine(dispute.Description);
-                            Console.WriteLine(dispute.Status);
-                            Console.WriteLine(dispute.OrderId);
-                            Console.WriteLine(dispute.SubmittedDate?.ToString("dd/MM/yyyy") ?? "null");
-
-                        }
+                        pagedDisputes = new X.PagedList.StaticPagedList<DisputeResponse>(data.Items, data.CurrentPage, data.PageSize, data.TotalCount);
                     }
                 }
             }
@@ -181,8 +253,9 @@ namespace frontEnd.Controllers
             {
                 Console.WriteLine(ex.Message);
             }
-            return View(disputes);
 
+            pagedDisputes ??= new X.PagedList.StaticPagedList<DisputeResponse>(new List<DisputeResponse>(), page, pageSize, 0);
+            return View(pagedDisputes);
         }
         public async Task<IActionResult> Details(int id)
         {
@@ -205,17 +278,6 @@ namespace frontEnd.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     var data = await response.Content.ReadFromJsonAsync<DisputeResponse>();
-                    if (data != null)
-                    {
-                        dispute = data;
-                        Console.WriteLine(dispute.ProductTitle);
-                        Console.WriteLine(dispute.SellerName);
-                        Console.WriteLine(dispute.Description);
-                        Console.WriteLine(dispute.Status);
-                        Console.WriteLine(dispute.OrderId);
-                        Console.WriteLine(dispute.SubmittedDate?.ToString("dd/MM/yyyy") ?? "null");
-
-                    }
                 }
             }
             catch (Exception ex)
