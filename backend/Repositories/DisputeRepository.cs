@@ -1,16 +1,20 @@
 using backend.DTOs;
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
+using Sieve.Models;
+using Sieve.Services;
 
 namespace backend.Repositories
 {
     public class DisputeRepository : IDisputeRepository
     {
         private readonly CloneEbayDbContext _context;
+        private readonly ISieveProcessor _sieveProcessor;
 
-        public DisputeRepository(CloneEbayDbContext context)
+        public DisputeRepository(CloneEbayDbContext context, ISieveProcessor sieveProcessor)
         {
             _context = context;
+            _sieveProcessor = sieveProcessor;
         }
 
         public async Task<Dispute> AddDispute(DisputeCreateDto disputeDto, int currentUserId)
@@ -46,9 +50,9 @@ namespace backend.Repositories
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<DisputeDto>> GetAllDisputes()
+        public async Task<PagedResult<DisputeDto>> GetAllDisputes(SieveModel sieveModel)
         {
-            var dispute = await _context.Disputes.Include(d => d.RaisedByNavigation).Include(d => d.Order).ThenInclude(o => o.OrderItems).ThenInclude(oi => oi.Product)
+            var query = _context.Disputes.Include(d => d.RaisedByNavigation).Include(d => d.Order).ThenInclude(o => o.OrderItems).ThenInclude(oi => oi.Product)
             .Select(d => new DisputeDto
             {
                 DisputeId = d.Id,
@@ -61,6 +65,7 @@ namespace backend.Repositories
                 SolvedDate = d.SolvedDate,
                 Comment = d.Comment,
                 Resolution = d.Resolution,
+                RaisedBy = d.RaisedByNavigation.Username,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -70,14 +75,25 @@ namespace backend.Repositories
                     FileExtension = i.FileExtension,
                     FileSizeInBytes = i.FileSizeInBytes ?? 0
                 }).ToList()
-            })
-            .ToListAsync();
-            return dispute;
+            });
+            // lọc dữ liệu mà chưa phân trang ( ví dụ có 20 item thì vẫn lấy hết chưa có skip (x) và take (x) item)
+            var result = _sieveProcessor.Apply(sieveModel, query, applyPagination: false);
+            var totalCount = await result.CountAsync();
+            // phân trang những dữ liệu ở bước trên ( ví dụ có 20 item thì lấy 10 item đầu tiên)
+            var items = await _sieveProcessor.Apply(sieveModel, result, applyFiltering: false, applySorting: false).ToListAsync();
+
+            return new PagedResult<DisputeDto>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                CurrentPage = sieveModel.Page ?? 1,
+                PageSize = sieveModel.PageSize ?? 10
+            };
         }
 
-        public async Task<IEnumerable<DisputeDto>> GetDisputesByBuyerId(int buyerId)
+        public async Task<PagedResult<DisputeDto>> GetDisputesByBuyerId(int buyerId, SieveModel sieveModel)
         {
-            var disputes = await _context.Disputes.Where(d => d.RaisedBy == buyerId).Include(d => d.RaisedByNavigation).Include(d => d.Order).ThenInclude(o => o.OrderItems).ThenInclude(oi => oi.Product)
+            var query = _context.Disputes.Where(d => d.RaisedBy == buyerId).Include(d => d.RaisedByNavigation).Include(d => d.Order).ThenInclude(o => o.OrderItems).ThenInclude(oi => oi.Product)
             .Select(d => new DisputeDto
             {
                 DisputeId = d.Id,
@@ -90,6 +106,7 @@ namespace backend.Repositories
                 SolvedDate = d.SolvedDate,
                 Comment = d.Comment,
                 Resolution = d.Resolution,
+                RaisedBy = d.RaisedByNavigation.Username,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -99,14 +116,24 @@ namespace backend.Repositories
                     FileExtension = i.FileExtension,
                     FileSizeInBytes = i.FileSizeInBytes ?? 0
                 }).ToList()
-            })
-            .ToListAsync();
-            return disputes;
+            });
+
+            var result = _sieveProcessor.Apply(sieveModel, query, applyPagination: false);
+            var totalCount = await result.CountAsync();
+            var items = await _sieveProcessor.Apply(sieveModel, result, applyFiltering: false, applySorting: false).ToListAsync();
+
+            return new PagedResult<DisputeDto>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                CurrentPage = sieveModel.Page ?? 1,
+                PageSize = sieveModel.PageSize ?? 10
+            };
         }
 
-        public async Task<IEnumerable<DisputeDto>> GetDisputesBySellerId(int sellerId)
+        public async Task<PagedResult<DisputeDto>> GetDisputesBySellerId(int sellerId, SieveModel sieveModel)
         {
-            var disputes = await _context.Disputes
+            var query = _context.Disputes
             .Include(d => d.RaisedByNavigation)
             .Include(d => d.Order)
             .ThenInclude(o => o.OrderItems)
@@ -124,6 +151,7 @@ namespace backend.Repositories
                 SolvedDate = d.SolvedDate,
                 Comment = d.Comment,
                 Resolution = d.Resolution,
+                RaisedBy = d.RaisedByNavigation.Username,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -133,8 +161,19 @@ namespace backend.Repositories
                     FileExtension = i.FileExtension,
                     FileSizeInBytes = i.FileSizeInBytes ?? 0
                 }).ToList()
-            }).ToListAsync();
-            return disputes;
+            });
+
+            var result = _sieveProcessor.Apply(sieveModel, query, applyPagination: false);
+            var totalCount = await result.CountAsync();
+            var items = await _sieveProcessor.Apply(sieveModel, result, applyFiltering: false, applySorting: false).ToListAsync();
+
+            return new PagedResult<DisputeDto>
+            {
+                Items = items,
+                TotalCount = totalCount,
+                CurrentPage = sieveModel.Page ?? 1,
+                PageSize = sieveModel.PageSize ?? 10
+            };
         }
 
         public async Task<DisputeDto> GetDisputeById(int id)
@@ -152,6 +191,7 @@ namespace backend.Repositories
                 SolvedDate = d.SolvedDate,
                 Comment = d.Comment,
                 Resolution = d.Resolution,
+                RaisedBy = d.RaisedByNavigation.Username,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {

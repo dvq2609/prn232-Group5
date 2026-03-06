@@ -53,6 +53,11 @@
                 {
                     <a class="hover:underline" asp-action="SellerDisputes" asp-controller="Dispute">Seller Disputes</a>
                 }
+                else if (role == "admin")
+                {
+                    <a class="hover:underline" asp-action="AllDisputes" asp-controller="Dispute">Disputes</a>
+                }
+
 
             </div>
             <div class="flex items-center space-x-6">
