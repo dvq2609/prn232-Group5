@@ -60,6 +60,7 @@ namespace backend.Repositories
                 SubmittedDate = d.SubmittedDate,
                 SolvedDate = d.SolvedDate,
                 Comment = d.Comment,
+                Resolution = d.Resolution,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -88,6 +89,7 @@ namespace backend.Repositories
                 SubmittedDate = d.SubmittedDate,
                 SolvedDate = d.SolvedDate,
                 Comment = d.Comment,
+                Resolution = d.Resolution,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -121,6 +123,7 @@ namespace backend.Repositories
                 SubmittedDate = d.SubmittedDate,
                 SolvedDate = d.SolvedDate,
                 Comment = d.Comment,
+                Resolution = d.Resolution,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -148,6 +151,7 @@ namespace backend.Repositories
                 SubmittedDate = d.SubmittedDate,
                 SolvedDate = d.SolvedDate,
                 Comment = d.Comment,
+                Resolution = d.Resolution,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {

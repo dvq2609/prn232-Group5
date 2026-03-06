@@ -14,6 +14,7 @@ namespace backend.DTOs
         public DateTime? SubmittedDate { get; set; }
         public DateTime? SolvedDate { get; set; }
         public string? Comment { get; set; }
+        public string? Resolution { get; set; }
         public List<ImageDto>? Images { get; set; }
     }
     public class DisputeCreateDto

@@ -129,6 +129,7 @@ namespace frontEnd.Controllers
                             Console.WriteLine(dispute.Description);
                             Console.WriteLine(dispute.Status);
                             Console.WriteLine(dispute.OrderId);
+                            Console.WriteLine(dispute.Resolution);
                         }
                     }
                 }
@@ -142,7 +143,7 @@ namespace frontEnd.Controllers
         }
         public async Task<IActionResult> SellerDisputes()
         {
-            List<DisputeViewModel> disputes = new List<DisputeViewModel>();
+            List<DisputeResponse> disputes = new List<DisputeResponse>();
             try
             {
                 var client = _httpClientFactory.CreateClient();
@@ -160,7 +161,7 @@ namespace frontEnd.Controllers
                 var response = await client.GetAsync($"https://localhost:7290/api/disputes/seller/{accountId}");
                 if (response.IsSuccessStatusCode)
                 {
-                    var data = await response.Content.ReadFromJsonAsync<List<DisputeViewModel>>();
+                    var data = await response.Content.ReadFromJsonAsync<List<DisputeResponse>>();
                     if (data != null)
                     {
                         disputes = data;

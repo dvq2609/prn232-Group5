@@ -23,6 +23,7 @@ namespace frontEnd.Models
         public string? ProductTitle { get; set; }
         public string? Description { get; set; }
         public string? SellerName { get; set; }
+        public string? Resolution { get; set; }
         public DateTime? SubmittedDate { get; set; }
         public DateTime? SolvedDate { get; set; }
         public string? Comment { get; set; }
