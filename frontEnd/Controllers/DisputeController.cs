@@ -148,15 +148,6 @@ namespace frontEnd.Controllers
                         data.PageSize,
                         // tổng số item
                         data.TotalCount);
-                        foreach (var dispute in data.Items)
-                        {
-                            Console.WriteLine(dispute.ProductTitle);
-                            Console.WriteLine(dispute.SellerName);
-                            Console.WriteLine(dispute.Description);
-                            Console.WriteLine(dispute.Status);
-                            Console.WriteLine(dispute.OrderId);
-                            Console.WriteLine(dispute.SubmittedDate?.ToString("dd/MM/yyyy") ?? "null");
-                        }
                     }
                 }
             }
@@ -206,15 +197,6 @@ namespace frontEnd.Controllers
                     if (data != null && data.Items != null)
                     {
                         pagedDisputes = new X.PagedList.StaticPagedList<DisputeResponse>(data.Items, data.CurrentPage, data.PageSize, data.TotalCount);
-                        foreach (var dispute in data.Items)
-                        {
-                            Console.WriteLine(dispute.ProductTitle);
-                            Console.WriteLine(dispute.SellerName);
-                            Console.WriteLine(dispute.Description);
-                            Console.WriteLine(dispute.Status);
-                            Console.WriteLine(dispute.OrderId);
-                            Console.WriteLine(dispute.Resolution);
-                        }
                     }
                 }
             }
@@ -264,15 +246,6 @@ namespace frontEnd.Controllers
                     if (data != null && data.Items != null)
                     {
                         pagedDisputes = new X.PagedList.StaticPagedList<DisputeResponse>(data.Items, data.CurrentPage, data.PageSize, data.TotalCount);
-                        foreach (var dispute in data.Items)
-                        {
-                            Console.WriteLine(dispute.ProductTitle);
-                            Console.WriteLine(dispute.SellerName);
-                            Console.WriteLine(dispute.Description);
-                            Console.WriteLine(dispute.Status);
-                            Console.WriteLine(dispute.OrderId);
-                            Console.WriteLine(dispute.SubmittedDate?.ToString("dd/MM/yyyy") ?? "null");
-                        }
                     }
                 }
             }
@@ -305,17 +278,6 @@ namespace frontEnd.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     var data = await response.Content.ReadFromJsonAsync<DisputeResponse>();
-                    if (data != null)
-                    {
-                        dispute = data;
-                        Console.WriteLine(dispute.ProductTitle);
-                        Console.WriteLine(dispute.SellerName);
-                        Console.WriteLine(dispute.Description);
-                        Console.WriteLine(dispute.Status);
-                        Console.WriteLine(dispute.OrderId);
-                        Console.WriteLine(dispute.SubmittedDate?.ToString("dd/MM/yyyy") ?? "null");
-
-                    }
                 }
             }
             catch (Exception ex)
