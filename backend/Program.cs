@@ -5,12 +5,9 @@ using backend.Mapping;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using backend.Repositories;
 using backend.Services;
-<<<<<<< HEAD
 using Sieve.Services;
-=======
 using backend.Repositories.Review;
 using backend.Services.Review;
->>>>>>> 90e2efc3d73d511b21e73a56979c534daf0036c1
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
