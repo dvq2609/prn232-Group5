@@ -1,6 +1,7 @@
 using AutoMapper;
 using backend.Models;
 using backend.DTOs;
+using backend.DTOs.Review;
 namespace backend.Mapping
 {
     public class AutoMapperProfiles : Profile
@@ -12,7 +13,9 @@ namespace backend.Mapping
             // ✅ Phải có dòng này trước khi Product map dùng Reviews
             CreateMap<Review, ReviewDto>()
                 .ForMember(dest => dest.ReviewerUsername,
-                    opt => opt.MapFrom(src => src.Reviewer != null ? src.Reviewer.Username : "Anonymous"));
+                    opt => opt.MapFrom(src => src.Reviewer != null ? src.Reviewer.Username : "Anonymous"))
+                .ForMember(dest => dest.Productname,
+                    opt => opt.MapFrom(src => src.Product != null ? src.Product.Title : null));
 
             CreateMap<Product, ProductDto>()
                 .ForMember(dest => dest.SellerName,
@@ -37,6 +40,9 @@ namespace backend.Mapping
                         .GroupBy(r => r.Rating!.Value)
                         .ToDictionary(g => g.Key, g => g.Count())))
                 .ReverseMap();
+
+            CreateMap<CreateReviewDto, Review>();
+
         }
     }
 }
