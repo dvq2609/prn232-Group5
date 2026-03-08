@@ -17,10 +17,7 @@ namespace backend.Controllers
             _reviewService = reviewService;
         }
 
-        /// <summary>
-        /// Tạo review mới — cần đăng nhập, ReviewerId lấy từ JWT
-        /// POST /api/reviews
-        /// </summary>
+
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Create([FromBody] CreateReviewDto dto)
@@ -41,10 +38,7 @@ namespace backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Lấy tất cả review của 1 product
-        /// GET /api/reviews/product/{productId}
-        /// </summary>
+
         [HttpGet("product/{productId}")]
         public async Task<IActionResult> GetByProductId(int productId)
         {
@@ -52,10 +46,7 @@ namespace backend.Controllers
             return Ok(reviews);
         }
 
-        /// <summary>
-        /// Lấy tất cả review mà 1 user đã viết
-        /// GET /api/reviews/user/{userId}
-        /// </summary>
+
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetByUserId(int userId)
         {
@@ -63,10 +54,7 @@ namespace backend.Controllers
             return Ok(reviews);
         }
 
-        /// <summary>
-        /// Lấy 1 review theo Id
-        /// GET /api/reviews/{id}
-        /// </summary>
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -76,10 +64,7 @@ namespace backend.Controllers
             return Ok(review);
         }
 
-        /// <summary>
-        /// Thống kê rating của 1 product (average, total, breakdown 1-5⭐)
-        /// GET /api/reviews/product/{productId}/summary
-        /// </summary>
+
         [HttpGet("product/{productId}/summary")]
         public async Task<IActionResult> GetSummary(int productId)
         {
@@ -87,10 +72,7 @@ namespace backend.Controllers
             return Ok(summary);
         }
 
-        /// <summary>
-        /// Cập nhật review — chỉ chủ review mới được sửa
-        /// PUT /api/reviews/{id}
-        /// </summary>
+ 
         [HttpPut("{id}")]
         [Authorize]
         public async Task<IActionResult> Update(int id, [FromBody] CreateReviewDto dto)
@@ -115,10 +97,7 @@ namespace backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Xóa review — chủ review hoặc admin
-        /// DELETE /api/reviews/{id}
-        /// </summary>
+
         [HttpDelete("{id}")]
         [Authorize]
         public async Task<IActionResult> Delete(int id)
@@ -142,9 +121,7 @@ namespace backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Helper: Lấy UserId từ JWT token (claim "AccountId" đã set trong AuthController)
-        /// </summary>
+
         private int GetCurrentUserId()
         {
             var accountIdClaim = User.FindFirst("AccountId");

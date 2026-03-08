@@ -13,7 +13,6 @@ namespace backend.Repositories.Review
             _context = context;
         }
 
-        // Lấy tất cả review của 1 product (kèm thông tin người review)
         public async Task<List<ReviewModel>> GetByProductIdAsync(int productId)
         {
             return await _context.Reviews
@@ -24,7 +23,6 @@ namespace backend.Repositories.Review
                 .ToListAsync();
         }
 
-        // Lấy tất cả review mà 1 user đã viết
         public async Task<List<ReviewModel>> GetByReviewerIdAsync(int reviewerId)
         {
             return await _context.Reviews
@@ -35,7 +33,6 @@ namespace backend.Repositories.Review
                 .ToListAsync();
         }
 
-        // Lấy 1 review theo Id
         public async Task<ReviewModel?> GetByIdAsync(int id)
         {
             return await _context.Reviews
@@ -44,14 +41,12 @@ namespace backend.Repositories.Review
                 .FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        // Kiểm tra user đã review product này chưa (1 review/product/user)
         public async Task<ReviewModel?> GetByReviewerAndProductAsync(int reviewerId, int productId)
         {
             return await _context.Reviews
                 .FirstOrDefaultAsync(r => r.ReviewerId == reviewerId && r.ProductId == productId);
         }
 
-        // Kiểm tra user đã mua và nhận hàng chưa (order status = "Delivered"/"delivered"/"Completed")
         public async Task<bool> HasCompletedOrderAsync(int reviewerId, int productId)
         {
             return await _context.OrderTables
@@ -60,20 +55,17 @@ namespace backend.Repositories.Review
                     && o.OrderItems.Any(oi => oi.ProductId == productId));
         }
 
-        // Tạo review mới
         public async Task<ReviewModel> CreateAsync(ReviewModel review)
         {
             _context.Reviews.Add(review);
             await _context.SaveChangesAsync();
 
-            // Load lại Reviewer + Product để AutoMapper có thể map ReviewerUsername + Productname
             await _context.Entry(review).Reference(r => r.Reviewer).LoadAsync();
             await _context.Entry(review).Reference(r => r.Product).LoadAsync();
 
             return review;
         }
 
-        // Cập nhật review (chỉ sửa rating + comment)
         public async Task<ReviewModel> UpdateAsync(ReviewModel review)
         {
             _context.Reviews.Update(review);
@@ -85,7 +77,6 @@ namespace backend.Repositories.Review
             return review;
         }
 
-        // Xóa review
         public async Task<bool> DeleteAsync(int id)
         {
             var review = await _context.Reviews.FindAsync(id);

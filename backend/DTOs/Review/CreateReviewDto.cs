@@ -8,7 +8,7 @@ namespace backend.DTOs.Review
     public class CreateReviewDto
     {
     public int ProductId { get; set; }
-    public int Rating { get; set; }        // 1-5
+    public int Rating { get; set; }       
     public string? Comment { get; set; }
     }
 }
