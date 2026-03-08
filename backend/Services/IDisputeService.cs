@@ -1,16 +1,19 @@
 using backend.DTOs;
 using backend.Models;
+using Sieve.Models;
 
 namespace backend.Services
 {
     public interface IDisputeService
     {
-        Task<IEnumerable<DisputeDto>> GetAllDisputes();
-        Task<IEnumerable<DisputeDto>> GetDisputesByBuyerId(int buyerId);
-        Task<IEnumerable<DisputeDto>> GetDisputesBySellerId(int sellerId);
+        Task<PagedResult<DisputeDto>> GetAllDisputes(SieveModel sieveModel);
+        Task<PagedResult<DisputeDto>> GetDisputesByBuyerId(int buyerId, SieveModel sieveModel);
+        Task<PagedResult<DisputeDto>> GetDisputesBySellerId(int sellerId, SieveModel sieveModel);
         Task<Dispute> AddDispute(DisputeCreateDto dispute, int currentUserId);
         Task UpdateDispute(Dispute dispute);
         Task DeleteDispute(int id);
+        Task AddDisputeImages(List<DisputeImage> images);
+        Task<DisputeDto> GetDisputeById(int id);
 
     }
 }

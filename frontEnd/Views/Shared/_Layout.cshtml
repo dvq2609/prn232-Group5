@@ -38,10 +38,13 @@
 
 
                     </strong></span>
-                <a class="hover:underline" asp-action="Logout" asp-controller="Auth">Logout</a>
+                @if (!string.IsNullOrEmpty(email))
+                {
+                    <a class="hover:underline" asp-action="Logout" asp-controller="Auth">Logout</a>
+                }
                 <a class="hover:underline" href="#">Daily Deals</a>
                 <a class="hover:underline" href="#">Help &amp; Contact</a>
-                <a class="hover:underline" asp-action="Create" asp-controller="Dispute">Send dispute</a>
+
                 @if (role == "buyer")
                 {
                     <a class="hover:underline" asp-action="BuyerDisputes" asp-controller="Dispute">Buyer Disputes</a>
@@ -50,6 +53,11 @@
                 {
                     <a class="hover:underline" asp-action="SellerDisputes" asp-controller="Dispute">Seller Disputes</a>
                 }
+                else if (role == "admin")
+                {
+                    <a class="hover:underline" asp-action="AllDisputes" asp-controller="Dispute">Disputes</a>
+                }
+
 
             </div>
             <div class="flex items-center space-x-6">

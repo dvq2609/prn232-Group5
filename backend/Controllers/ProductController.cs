@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using backend.Services;
 using AutoMapper;
 using backend.DTOs;
+using Microsoft.AspNetCore.Authorization;
 namespace backend.Controllers
 {
     [ApiController]
@@ -34,6 +35,7 @@ namespace backend.Controllers
             return Ok(productDto);
         }
         [HttpGet("buyer/{buyerId}")]
+        [Authorize]
         public async Task<IActionResult> GetByBuyerId(int buyerId)
         {
             var products = await _productService.GetByBuyerIdAsync(buyerId);

@@ -1,6 +1,8 @@
 ﻿using backend.DTOs;
 using backend.Models;
 using backend.Repositories;
+using Microsoft.AspNetCore.Mvc;
+using Sieve.Models;
 
 namespace backend.Services
 {
@@ -15,25 +17,33 @@ namespace backend.Services
         {
             return await _disputeRepository.AddDispute(dispute, currentUserId);
         }
+        public async Task<DisputeDto> GetDisputeById(int id)
+        {
+            return await _disputeRepository.GetDisputeById(id);
+        }
+        public async Task AddDisputeImages(List<DisputeImage> images)
+        {
+            await _disputeRepository.AddDisputeImages(images);
+        }
 
         public Task DeleteDispute(int id)
         {
             throw new NotImplementedException();
         }
 
-        public async Task<IEnumerable<DisputeDto>> GetAllDisputes()
+        public async Task<PagedResult<DisputeDto>> GetAllDisputes(SieveModel sieveModel)
         {
-            return await _disputeRepository.GetAllDisputes();
+            return await _disputeRepository.GetAllDisputes(sieveModel);
         }
 
-        public async Task<IEnumerable<DisputeDto>> GetDisputesByBuyerId(int buyerId)
+        public async Task<PagedResult<DisputeDto>> GetDisputesByBuyerId(int buyerId, SieveModel sieveModel)
         {
-            return await _disputeRepository.GetDisputesByBuyerId(buyerId);
+            return await _disputeRepository.GetDisputesByBuyerId(buyerId, sieveModel);
         }
 
-        public async Task<IEnumerable<DisputeDto>> GetDisputesBySellerId(int sellerId)
+        public async Task<PagedResult<DisputeDto>> GetDisputesBySellerId(int sellerId, SieveModel sieveModel)
         {
-            return await _disputeRepository.GetDisputesBySellerId(sellerId);
+            return await _disputeRepository.GetDisputesBySellerId(sellerId, sieveModel);
         }
 
         public Task UpdateDispute(Dispute dispute)

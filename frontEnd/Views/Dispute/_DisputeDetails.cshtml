@@ -1,0 +1,109 @@
+@model frontEnd.Models.DisputeResponse
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var role = HttpContextAccessor.HttpContext.Session.GetString("Role");
+}
+<div class="space-y-6">
+    <!-- Status and Header info -->
+    <div class="flex justify-between items-start">
+        <div>
+            <h3 class="text-lg font-bold text-gray-900">Mã Khiếu Nại: #@Model.DisputeId</h3>
+            <p class="text-sm text-gray-500 mt-1">Sản phẩm: <span class="text-gray-800 font-medium">@(Model.ProductTitle ?? "—")</span></p>
+            <p class="text-sm text-gray-500">Người bán: <span class="text-gray-800 font-medium">@(Model.SellerName ?? "—")</span></p>
+            @if(Model.OrderId.HasValue) 
+            {
+                <p class="text-sm text-gray-500">Mã đơn hàng: <span class="text-gray-800 font-medium">#@Model.OrderId</span></p>
+            }
+         
+        </div>
+        <div>
+            @{
+                string badgeClass = "bg-gray-100 text-gray-600";
+                string statusLabel = Model.Status ?? "—";
+                var s = Model.Status?.ToLower() ?? "";
+                if (s == "pending" || s == "open") { badgeClass = "bg-yellow-100 text-yellow-700"; statusLabel = "Đang xử lý"; }
+                else if (s == "resolved" || s == "closed") { badgeClass = "bg-green-100 text-green-700"; statusLabel = "Đã giải quyết"; }
+                else if (s == "rejected") { badgeClass = "bg-red-100 text-red-700"; statusLabel = "Bị từ chối"; }
+            }
+            <span class="px-3 py-1 rounded-full text-sm font-semibold @badgeClass">@statusLabel</span>
+        </div>
+        <div>
+            @if(role == "seller")
+            {
+                <button onclick="toggleChat()"
+                        class="ml-auto inline-flex items-center px-3 py-1 border border-primary text-primary rounded-full text-xs font-semibold hover:bg-primary/5 transition-colors">
+                    <span class="material-symbols-outlined text-sm mr-1">chat_bubble_outline</span>
+                    Chat with buyer
+                </button>
+            }
+            else if(role == "buyer")
+            {
+                <button onclick="toggleChat()"
+                        class="ml-auto inline-flex items-center px-3 py-1 border border-primary text-primary rounded-full text-xs font-semibold hover:bg-primary/5 transition-colors">
+                    <span class="material-symbols-outlined text-sm mr-1">chat_bubble_outline</span>
+                    Chat with seller
+                </button>
+            }
+        </div>
+    </div>
+
+    <!-- Dates -->
+    <div class="grid grid-cols-2 gap-4 text-sm mt-4">
+        <div class="bg-gray-50 p-3 rounded-md border border-gray-100">
+            <span class="block text-gray-500 mb-1">Ngày gửi:</span>
+            <span class="font-medium text-gray-800">@(Model.SubmittedDate?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</span>
+        </div>
+        <div class="bg-gray-50 p-3 rounded-md border border-gray-100">
+            <span class="block text-gray-500 mb-1">Ngày giải quyết:</span>
+            <span class="font-medium text-gray-800">@(Model.SolvedDate?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa giải quyết")</span>
+        </div>
+    </div>
+    <!-- Resolution -->
+    @if(!string.IsNullOrEmpty(Model.Resolution))
+    {
+        <div>
+            <h4 class="font-semibold text-gray-800 mb-2 border-b pb-1">Chi tiết giải quyết</h4>
+            <p class="text-gray-700 whitespace-pre-line text-sm bg-white border border-gray-200 p-4 rounded-lg shadow-sm leading-relaxed">
+                @(string.IsNullOrWhiteSpace(Model.Description) ? "Không có mô tả" : Model.Resolution)
+            </p>
+        </div>
+    }
+
+    <!-- Description -->
+    <div>
+        <h4 class="font-semibold text-gray-800 mb-2 border-b pb-1">Chi tiết vấn đề</h4>
+        <p class="text-gray-700 whitespace-pre-line text-sm bg-white border border-gray-200 p-4 rounded-lg shadow-sm leading-relaxed">
+            @(string.IsNullOrWhiteSpace(Model.Description) ? "Không có mô tả" : Model.Description)
+        </p>
+    </div>
+
+    <!-- Attachments -->
+    @if (Model.Images != null && Model.Images.Any())
+    {
+        <div>
+            <h4 class="font-semibold text-gray-800 mb-2 border-b pb-1">Đính kèm</h4>
+            <div class="flex flex-wrap gap-3">
+                @foreach (var img in Model.Images)
+                {
+                    var backendBase = "https://localhost:7290";
+                    var imgSrc = img.FilePath.StartsWith("http") ? img.FilePath : backendBase + img.FilePath;
+                    <a href="@imgSrc" target="_blank" class="block group relative rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:ring-2 hover:ring-blue-500 transition-all">
+                        <img src="@imgSrc" class="w-24 h-24 object-cover" alt="Image evidence" />
+                    </a>
+                }
+            </div>
+        </div>
+    }
+
+    <!-- Admin Comment -->
+    @if (!string.IsNullOrWhiteSpace(Model.Comment))
+    {
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+            <h4 class="font-semibold text-blue-800 mb-1 text-sm flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                Phản hồi từ bộ phận hỗ trợ
+            </h4>
+            <p class="text-blue-900 text-sm whitespace-pre-line mt-2">@Model.Comment</p>
+        </div>
+    }
+</div>

@@ -27,6 +27,8 @@ public partial class CloneEbayDbContext : DbContext
 
     public virtual DbSet<Dispute> Disputes { get; set; }
 
+    public virtual DbSet<DisputeImage> DisputeImages { get; set; }
+
     public virtual DbSet<Feedback> Feedbacks { get; set; }
 
     public virtual DbSet<Inventory> Inventories { get; set; }
@@ -54,13 +56,9 @@ public partial class CloneEbayDbContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        if (!optionsBuilder.IsConfigured)
-        {
-            var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-            optionsBuilder.UseSqlServer(config.GetConnectionString("MyCnn"));
-        }
-    }
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=quynzz\\SQLEXPRESS;Database=CloneEbayDB;Trusted_Connection=True;TrustServerCertificate=True");
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Address>(entity =>
@@ -193,13 +191,22 @@ public partial class CloneEbayDbContext : DbContext
             entity.HasIndex(e => e.RaisedBy, "IX_Dispute_raisedBy");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Comment)
+                .HasMaxLength(500)
+                .HasColumnName("comment");
             entity.Property(e => e.Description).HasColumnName("description");
             entity.Property(e => e.OrderId).HasColumnName("orderId");
             entity.Property(e => e.RaisedBy).HasColumnName("raisedBy");
             entity.Property(e => e.Resolution).HasColumnName("resolution");
+            entity.Property(e => e.SolvedDate)
+                .HasColumnType("datetime")
+                .HasColumnName("solvedDate");
             entity.Property(e => e.Status)
                 .HasMaxLength(20)
                 .HasColumnName("status");
+            entity.Property(e => e.SubmittedDate)
+                .HasColumnType("datetime")
+                .HasColumnName("submittedDate");
 
             entity.HasOne(d => d.Order).WithMany(p => p.Disputes)
                 .HasForeignKey(d => d.OrderId)
@@ -208,6 +215,22 @@ public partial class CloneEbayDbContext : DbContext
             entity.HasOne(d => d.RaisedByNavigation).WithMany(p => p.Disputes)
                 .HasForeignKey(d => d.RaisedBy)
                 .HasConstraintName("FK__Dispute__raisedB__6A30C649");
+        });
+
+        modelBuilder.Entity<DisputeImage>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__DisputeI__3213E83F94272785");
+
+            entity.ToTable("DisputeImage");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.DisputeId).HasColumnName("disputeId");
+            entity.Property(e => e.FileExtension).HasMaxLength(10);
+            entity.Property(e => e.FileName).HasMaxLength(255);
+
+            entity.HasOne(d => d.Dispute).WithMany(p => p.DisputeImages)
+                .HasForeignKey(d => d.DisputeId)
+                .HasConstraintName("FK_Dispute_Images");
         });
 
         modelBuilder.Entity<Feedback>(entity =>
@@ -323,6 +346,7 @@ public partial class CloneEbayDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.AddressId).HasColumnName("addressId");
             entity.Property(e => e.BuyerId).HasColumnName("buyerId");
+            entity.Property(e => e.IsCommented).HasColumnName("isCommented");
             entity.Property(e => e.OrderDate)
                 .HasColumnType("datetime")
                 .HasColumnName("orderDate");
