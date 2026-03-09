@@ -8,6 +8,7 @@ namespace backend.DTOs
         [Sieve(CanSort = true, CanFilter = true)]
         public int DisputeId { get; set; }
         public int? OrderId { get; set; }
+        [Sieve(CanFilter = true)]
         public string? Status { get; set; }
         public string? UserDispute { get; set; }
         public string? ProductTitle { get; set; }
@@ -19,6 +20,7 @@ namespace backend.DTOs
         public string? Comment { get; set; }
         public string? Resolution { get; set; }
         public string? SellerResponse { get; set; }
+        public string? BuyerResponse { get; set; }
         public List<ImageDto>? Images { get; set; }
     }
     public class DisputeCreateDto

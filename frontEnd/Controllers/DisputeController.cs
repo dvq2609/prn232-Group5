@@ -99,9 +99,10 @@ namespace frontEnd.Controllers
             }
             return View();
         }
-        public async Task<IActionResult> AllDisputes(int page = 1, int pageSize = 5)
+        public async Task<IActionResult> AllDisputes(int page = 1, int pageSize = 5, string status = "all")
         {
             X.PagedList.IPagedList<DisputeResponse> pagedDisputes = null;
+            ViewBag.CurrentStatus = status;
             try
             {
                 var client = _httpClientFactory.CreateClient();
@@ -117,7 +118,8 @@ namespace frontEnd.Controllers
                     client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 }
 
-                var response = await client.GetAsync($"https://localhost:7290/api/disputes?page={page}&pageSize={pageSize}&sorts=-DisputeId");
+                var filterParam = (!string.IsNullOrEmpty(status) && status != "all") ? $"&filters=Status=={status}" : "";
+                var response = await client.GetAsync($"https://localhost:7290/api/disputes?page={page}&pageSize={pageSize}&sorts=-DisputeId{filterParam}");
                 var statsResponse = await client.GetAsync($"https://localhost:7290/api/disputes?page=1&pageSize=100000");
 
                 if (statsResponse.IsSuccessStatusCode)
@@ -159,9 +161,10 @@ namespace frontEnd.Controllers
             pagedDisputes ??= new X.PagedList.StaticPagedList<DisputeResponse>(new List<DisputeResponse>(), page, pageSize, 0);
             return View(pagedDisputes);
         }
-        public async Task<IActionResult> BuyerDisputes(int page = 1, int pageSize = 5)
+        public async Task<IActionResult> BuyerDisputes(int page = 1, int pageSize = 5, string status = "all")
         {
             X.PagedList.IPagedList<DisputeResponse> pagedDisputes = null;
+            ViewBag.CurrentStatus = status;
             try
             {
                 var client = _httpClientFactory.CreateClient();
@@ -177,7 +180,8 @@ namespace frontEnd.Controllers
                     client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 }
 
-                var response = await client.GetAsync($"https://localhost:7290/api/disputes/buyer/{accountId}?page={page}&pageSize={pageSize}&sorts=-DisputeId");
+                var filterParam = (!string.IsNullOrEmpty(status) && status != "all") ? $"&filters=Status=={status}" : "";
+                var response = await client.GetAsync($"https://localhost:7290/api/disputes/buyer/{accountId}?page={page}&pageSize={pageSize}&sorts=-DisputeId{filterParam}");
                 var statsResponse = await client.GetAsync($"https://localhost:7290/api/disputes/buyer/{accountId}?page=1&pageSize=100000");
 
                 if (statsResponse.IsSuccessStatusCode)
@@ -208,9 +212,10 @@ namespace frontEnd.Controllers
             pagedDisputes ??= new X.PagedList.StaticPagedList<DisputeResponse>(new List<DisputeResponse>(), page, pageSize, 0);
             return View(pagedDisputes);
         }
-        public async Task<IActionResult> SellerDisputes(int page = 1, int pageSize = 5)
+        public async Task<IActionResult> SellerDisputes(int page = 1, int pageSize = 5, string status = "all")
         {
             X.PagedList.IPagedList<DisputeResponse> pagedDisputes = null;
+            ViewBag.CurrentStatus = status;
             try
             {
                 var client = _httpClientFactory.CreateClient();
@@ -226,7 +231,8 @@ namespace frontEnd.Controllers
                     client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 }
 
-                var response = await client.GetAsync($"https://localhost:7290/api/disputes/seller/{accountId}?page={page}&pageSize={pageSize}&sorts=-DisputeId");
+                var filterParam = (!string.IsNullOrEmpty(status) && status != "all") ? $"&filters=Status=={status}" : "";
+                var response = await client.GetAsync($"https://localhost:7290/api/disputes/seller/{accountId}?page={page}&pageSize={pageSize}&sorts=-DisputeId{filterParam}");
                 var statsResponse = await client.GetAsync($"https://localhost:7290/api/disputes/seller/{accountId}?page=1&pageSize=100000");
 
                 if (statsResponse.IsSuccessStatusCode)
@@ -323,6 +329,43 @@ namespace frontEnd.Controllers
             }
 
             return RedirectToAction("SellerDisputes");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> BuyerResponse(int id, DisputeBuyerResponseDto responseDto)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                var token = HttpContext.Session.GetString("Token");
+                var role = HttpContext.Session.GetString("Role");
+                if (role != "buyer")
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+
+                var response = await client.PostAsJsonAsync($"https://localhost:7290/api/disputes/{id}/buyer-response", responseDto);
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["SuccessMessage"] = "Gửi phản hồi cho người bán thành công.";
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    TempData["ErrorMessage"] = "Không thể gửi phản hồi: " + error;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                TempData["ErrorMessage"] = "Lỗi hệ thống: " + ex.Message;
+            }
+
+            return RedirectToAction("BuyerDisputes");
         }
     }
 }

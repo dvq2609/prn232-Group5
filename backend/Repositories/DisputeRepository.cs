@@ -72,6 +72,7 @@ namespace backend.Repositories
                 Resolution = d.Resolution,
                 RaisedBy = d.RaisedByNavigation.Username,
                 SellerResponse = d.SellerResponse,
+                BuyerResponse = d.BuyerResponse,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -114,6 +115,7 @@ namespace backend.Repositories
                 Resolution = d.Resolution,
                 SellerResponse = d.SellerResponse,
                 RaisedBy = d.RaisedByNavigation.Username,
+                BuyerResponse = d.BuyerResponse,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -160,6 +162,7 @@ namespace backend.Repositories
                 Resolution = d.Resolution,
                 RaisedBy = d.RaisedByNavigation.Username,
                 SellerResponse = d.SellerResponse,
+                BuyerResponse = d.BuyerResponse,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -201,6 +204,7 @@ namespace backend.Repositories
                 Resolution = d.Resolution,
                 SellerResponse = d.SellerResponse,
                 RaisedBy = d.RaisedByNavigation.Username,
+                BuyerResponse = d.BuyerResponse,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
