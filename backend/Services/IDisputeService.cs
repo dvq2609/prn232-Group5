@@ -15,5 +15,6 @@ namespace backend.Services
         Task AddDisputeImages(List<DisputeImage> images);
         Task<DisputeDto> GetDisputeById(int id);
         Task<bool> ProcessSellerResponseAsync(int disputeId, DisputeSellerResponseDto responseDto, int sellerId);
+        Task<bool> ProcessBuyerResponseAsync(int disputeId, DisputeBuyerResponseDto responseDto, int buyerId);
     }
 }

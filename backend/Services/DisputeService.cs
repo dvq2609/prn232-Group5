@@ -85,5 +85,35 @@ namespace backend.Services
             await _disputeRepository.UpdateDispute(dispute);
             return true;
         }
+        public async Task<bool> ProcessBuyerResponseAsync(int disputeId, DisputeBuyerResponseDto responseDto, int buyerId)
+        {
+            var dispute = await _disputeRepository.GetDisputeEntityById(disputeId);
+            if (dispute == null) throw new Exception("Dispute not found");
+
+            var isBuyer = dispute.Order?.BuyerId == buyerId;
+            if (!isBuyer) throw new Exception("You are not the buyer of this order");
+
+            if (dispute.Status != "Negotiating") throw new Exception("Dispute is not in a state that can be responded to by buyer");
+
+            switch (responseDto.Action)
+            {
+                case DisputeBuyerActionType.Accept:
+                    dispute.Status = "Resolved_Refunded";
+                    dispute.Resolution = "Người mua đồng ý với đề nghị của người bán";
+                    if (dispute.Order != null) dispute.Order.Status = "Refunded";
+                    break;
+                case DisputeBuyerActionType.Decline:
+                    dispute.Status = "Escalated";
+                    dispute.Resolution = "Người mua từ chối đề nghị của người bán";
+                    break;
+                default:
+                    throw new Exception("Hành động không hợp lệ");
+            }
+
+            dispute.BuyerResponse = responseDto.Message;
+
+            await _disputeRepository.UpdateDispute(dispute);
+            return true;
+        }
     }
 }

@@ -153,5 +153,26 @@ namespace backend.Controllers
             }
         }
 
+        [HttpPost("{id}/buyer-response")]
+        public async Task<IActionResult> BuyerResponse(int id, [FromBody] DisputeBuyerResponseDto responseDto)
+        {
+            var userIdString = User.FindFirstValue("AccountId");
+            if (userIdString == null) return Unauthorized();
+
+            int buyerId = int.Parse(userIdString);
+            try
+            {
+                var result = await _disputeService.ProcessBuyerResponseAsync(id, responseDto, buyerId);
+                if (result)
+                {
+                    return Ok(new { message = "Gửi phản hồi cho người bán thành công." });
+                }
+                return BadRequest("Không thể gửi phản hồi.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

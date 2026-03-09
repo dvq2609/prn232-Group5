@@ -70,9 +70,12 @@
                         <label for="statusFilter" class="text-sm font-medium text-gray-700">Trạng thái:</label>
                         <select id="statusFilter" class="border border-gray-200 rounded-lg px-3 py-2 text-sm cursor-pointer outline-none focus:ring-2 focus:ring-blue-500" onchange="filterDisputes()">
                             <option value="all">Tất cả</option>
-                            <option value="pending">Đang xử lý</option>
-                            <option value="resolved">Đã giải quyết</option>
-                            <option value="rejected">Đã từ chối</option>
+                            <option value="Pending">Đang xử lý</option>
+                            <option value="Resolved">Đã giải quyết</option>
+                            <option value="Rejected">Bị từ chối</option>
+                            <option value="Negotiating">Đang thương lượng</option>
+                            <option value="Escalated">Đã gửi lên Admin</option>
+                            <option value="Resolved_Refunded">Đã hoàn tiền</option>
                         </select>
                     </div>
                     <div class="flex items-center gap-2">
@@ -127,16 +130,22 @@
                             // Status badge config
                             string badgeClass;
                             string statusLabel;
-                            string mappedStatus = "all";
+                            string mappedStatus = dispute.Status ?? "all";
                             var s = dispute.Status?.ToLower() ?? "";
                             if (s == "pending" || s == "open")
-                            { badgeClass = "bg-yellow-100 text-yellow-700"; statusLabel = "Đang xử lý"; mappedStatus = "pending"; }
+                            { badgeClass = "bg-yellow-100 text-yellow-700"; statusLabel = "Đang xử lý"; }
                             else if (s == "resolved" || s == "closed")
-                            { badgeClass = "bg-green-100 text-green-700"; statusLabel = "Đã giải quyết"; mappedStatus = "resolved"; }
+                            { badgeClass = "bg-green-100 text-green-700"; statusLabel = "Đã giải quyết"; }
                             else if (s == "rejected")
-                            { badgeClass = "bg-red-100 text-red-700"; statusLabel = "Bị từ chối"; mappedStatus = "rejected"; }
+                            { badgeClass = "bg-red-100 text-red-700"; statusLabel = "Bị từ chối"; }
+                            else if (s == "negotiating")
+                            { badgeClass = "bg-purple-100 text-purple-700"; statusLabel = "Đang thương lượng"; }
+                            else if (s == "escalated")
+                            { badgeClass = "bg-orange-100 text-orange-700"; statusLabel = "Đã gửi lên Admin"; }
+                            else if (s == "resolved_refunded")
+                            { badgeClass = "bg-emerald-100 text-emerald-700"; statusLabel = "Đã hoàn tiền"; }
                             else
-                            { badgeClass = "bg-gray-100 text-gray-600"; statusLabel = dispute.Status ?? "—"; mappedStatus = s; }
+                            { badgeClass = "bg-gray-100 text-gray-600"; statusLabel = dispute.Status ?? "—"; }
 
                             <tr class="hover:bg-gray-50 transition-colors dispute-row" data-status="@mappedStatus" data-date="@(dispute.SubmittedDate?.ToString("yyyy-MM-dd"))">
                                 <td class="px-5 py-4 font-mono text-gray-700 font-semibold">#@dispute.DisputeId</td>
@@ -192,7 +201,7 @@
             @if (Model != null && Model.PageCount > 1)
             {
                 <div class="mt-6 flex justify-center">
-                    @Html.PagedListPager(Model, page => Url.Action("SellerDisputes", new { page }),
+                    @Html.PagedListPager(Model, page => Url.Action("SellerDisputes", new { page, status = ViewBag.CurrentStatus }),
                         new PagedListRenderOptions
                         {
                             LiElementClasses = new[] { "px-3", "py-2", "border", "border-gray-200", "bg-white", "text-sm", "font-medium", "text-gray-700", "hover:bg-gray-50", "rounded-md", "mx-1" },
@@ -245,55 +254,17 @@
     </div>
 
     <script>
+        // Set selected filter from server
+        document.addEventListener('DOMContentLoaded', function() {
+            var currentStatus = '@ViewBag.CurrentStatus';
+            var sel = document.getElementById('statusFilter');
+            if (sel && currentStatus) { sel.value = currentStatus; }
+        });
+
         function filterDisputes() {
-            var statusFilter = document.getElementById('statusFilter');
-            var dateFilter = document.getElementById('dateFilter');
-
-            // Only proceed if elements exist
-            if (!statusFilter || !dateFilter) return;
-
-            var statusVal = statusFilter.value;
-            var dateVal = dateFilter.value;
-            var rows = document.querySelectorAll('.dispute-row');
-
-            var today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            rows.forEach(function(row) {
-                var show = true;
-
-                // Check status
-                if (statusVal !== 'all' && row.getAttribute('data-status') !== statusVal) {
-                    show = false;
-                }
-
-                // Check date
-                if (show && dateVal !== 'all') {
-                    var dateStr = row.getAttribute('data-date');
-                    if (dateStr) {
-                        var rowDate = new Date(dateStr);
-                        rowDate.setHours(0, 0, 0, 0);
-                        var diffTime = today - rowDate; // Use simply difference since today > rowDate expected
-                        var diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                        if (dateVal === '30' && diffDays > 30) {
-                            show = false;
-                        } else if (dateVal === '60' && diffDays > 60) {
-                            show = false;
-                        }
-                    }
-                }
-
-                if (show) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
+            var statusVal = document.getElementById('statusFilter').value;
+            window.location.href = '@Url.Action("SellerDisputes")' + '?status=' + statusVal;
         }
-
-        // Initialize filter on load
-        document.addEventListener('DOMContentLoaded', filterDisputes);
 
         function openDisputeModal(disputeId) {
             var modal = document.getElementById('disputeModal');
