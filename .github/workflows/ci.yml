@@ -1,0 +1,36 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x' # Or the specific version your project uses (e.g., '9.0.x' based on your dotnet version)
+
+      - name: Restore dependencies
+        run: dotnet restore
+        working-directory: ./backend
+
+      - name: Build
+        run: dotnet build --no-restore
+        working-directory: ./backend
+
+      - name: Restore dependencies (Frontend)
+        run: dotnet restore
+        working-directory: ./frontEnd
+
+      - name: Build (Frontend)
+        run: dotnet build --no-restore
+        working-directory: ./frontEnd
