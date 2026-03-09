@@ -152,22 +152,5 @@
                 </div>
             </form>
         </div>
-
-        <script>
-            function toggleAmountField() {
-                var actionObj = document.getElementById("sellerAction");
-                var amountDiv = document.getElementById("amountOfferContainer");
-                var amountInput = document.getElementById("amountOffer");
-
-                if (actionObj.value == "2") {
-                    amountDiv.classList.remove("hidden");
-                    amountInput.required = true;
-                } else {
-                    amountDiv.classList.add("hidden");
-                    amountInput.required = false;
-                    amountInput.value = "";
-                }
-            }
-        </script>
     }
 </div>

@@ -328,5 +328,21 @@
             modal.classList.add('hidden');
             document.body.style.overflow = ''; // Restore scrolling
         }
+
+        // Global function for Seller Response Form inside Modal
+        function toggleAmountField() {
+            var actionObj = document.getElementById("sellerAction");
+            var amountDiv = document.getElementById("amountOfferContainer");
+            var amountInput = document.getElementById("amountOffer");
+
+            if (actionObj && actionObj.value == "2") {
+                amountDiv.style.display = "block";
+                amountInput.required = true;
+            } else if (actionDiv) {
+                amountDiv.style.display = "none";
+                amountInput.required = false;
+                amountInput.value = "";
+            }
+        }
     </script>
 </body>
