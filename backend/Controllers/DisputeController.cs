@@ -128,5 +128,30 @@ namespace backend.Controllers
             }
         }
 
+        [HttpPost("{id}/seller-response")]
+        public async Task<IActionResult> SellerResponse(int id, [FromBody] DisputeSellerResponseDto responseDto)
+        {
+            var userIdString = User.FindFirstValue("AccountId");
+            if (userIdString == null)
+            {
+                return Unauthorized();
+            }
+            int sellerId = int.Parse(userIdString);
+
+            try
+            {
+                var result = await _disputeService.ProcessSellerResponseAsync(id, responseDto, sellerId);
+                if (result)
+                {
+                    return Ok(new { message = "Xử lý phản hồi khiếu nại thành công." });
+                }
+                return BadRequest("Không thể xử lý phản hồi.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

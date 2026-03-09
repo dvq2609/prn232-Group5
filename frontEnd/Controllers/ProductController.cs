@@ -36,8 +36,14 @@ namespace frontEnd.Controllers
                 // Chưa đăng nhập -> redirect về trang login
                 return RedirectToAction("Login", "Auth");
             }
-
             var client = _httpClientFactory.CreateClient();
+            var token = HttpContext.Session.GetString("Token");
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            }
+
             var payload = new
             {
                 buyerId,
@@ -53,6 +59,7 @@ namespace frontEnd.Controllers
             }
             else
             {
+                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
                 TempData["ErrorMessage"] = "❌ Đặt hàng thất bại. Vui lòng thử lại.";
             }
 

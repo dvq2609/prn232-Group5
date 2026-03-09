@@ -266,7 +266,7 @@ namespace frontEnd.Controllers
                 var token = HttpContext.Session.GetString("Token");
                 var role = HttpContext.Session.GetString("Role");
                 var accountId = HttpContext.Session.GetString("AccountId");
-                if (role != "buyer" && role != "seller")
+                if (role != "buyer" && role != "seller" && role != "admin")
                 {
                     return RedirectToAction("Login", "Auth");
                 }
@@ -278,6 +278,7 @@ namespace frontEnd.Controllers
                 if (response.IsSuccessStatusCode)
                 {
                     var data = await response.Content.ReadFromJsonAsync<DisputeResponse>();
+                    dispute = data;
                 }
             }
             catch (Exception ex)
@@ -287,5 +288,41 @@ namespace frontEnd.Controllers
             return PartialView("_DisputeDetails", dispute);
         }
 
+        [HttpPost]
+        public async Task<IActionResult> SellerResponse(int id, DisputeSellerResponseDto responseDto)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                var token = HttpContext.Session.GetString("Token");
+                var role = HttpContext.Session.GetString("Role");
+                if (role != "seller")
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+
+                var response = await client.PostAsJsonAsync($"https://localhost:7290/api/disputes/{id}/seller-response", responseDto);
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["SuccessMessage"] = "Phản hồi khiếu nại thành công.";
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    TempData["ErrorMessage"] = "Không thể gửi phản hồi: " + error;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                TempData["ErrorMessage"] = "Lỗi hệ thống: " + ex.Message;
+            }
+
+            return RedirectToAction("SellerDisputes");
+        }
     }
 }
