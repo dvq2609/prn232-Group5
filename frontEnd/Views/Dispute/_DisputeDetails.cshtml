@@ -98,12 +98,76 @@
     <!-- Admin Comment -->
     @if (!string.IsNullOrWhiteSpace(Model.Comment))
     {
-        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mt-6">
             <h4 class="font-semibold text-blue-800 mb-1 text-sm flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
                 Phản hồi từ bộ phận hỗ trợ
             </h4>
             <p class="text-blue-900 text-sm whitespace-pre-line mt-2">@Model.Comment</p>
         </div>
+    }
+     <!-- seller response -->
+    @if (!string.IsNullOrWhiteSpace(Model.SellerResponse))
+    {
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg mt-6">
+            <h4 class="font-semibold text-blue-800 mb-1 text-sm flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                Phản hồi từ người bán
+            </h4>
+            <p class="text-blue-900 text-sm whitespace-pre-line mt-2">@Model.SellerResponse</p>
+        </div>
+    }
+
+    <!-- Seller Response Form -->
+    @if (role == "seller" && (Model.Status?.ToLower() == "pending" || Model.Status?.ToLower() == "open"))
+    {
+        <div class="mt-6 border-t pt-4">
+            <h4 class="font-bold text-gray-800 mb-3 text-lg">Phản hồi của người bán</h4>
+            <form id="sellerResponseForm" action="/Dispute/SellerResponse" method="post" class="space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <input type="hidden" name="id" value="@Model.DisputeId" />
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Hành động của bạn</label>
+                    <select id="sellerAction" name="Action" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" onchange="toggleAmountField()">
+                        <option value="1">Chấp nhận hoàn tiền (Accept Return)</option>
+                        <option value="2">Đề nghị đền bù 1 phần (Offer Partial)</option>
+                        <option value="3">Từ chối khiếu nại (Decline)</option>
+                    </select>
+                </div>
+
+                <div id="amountOfferContainer" class="hidden">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Số tiền đề nghị đền bù (VND)</label>
+                    <input type="number" name="AmountOffer" id="amountOffer" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" min="0" />
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Lời nhắn / Biện minh</label>
+                    <textarea name="Message" rows="3" class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Nhập lời giải thích hoặc tin nhắn..." required></textarea>
+                </div>
+
+                <div class="flex justify-end pt-2">
+                    <button type="submit" class="bg-blue-600 border border-transparent rounded-md shadow-sm py-2 px-4 inline-flex justify-center text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Gửi phản hồi
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            function toggleAmountField() {
+                var actionObj = document.getElementById("sellerAction");
+                var amountDiv = document.getElementById("amountOfferContainer");
+                var amountInput = document.getElementById("amountOffer");
+
+                if (actionObj.value == "2") {
+                    amountDiv.classList.remove("hidden");
+                    amountInput.required = true;
+                } else {
+                    amountDiv.classList.add("hidden");
+                    amountInput.required = false;
+                    amountInput.value = "";
+                }
+            }
+        </script>
     }
 </div>
