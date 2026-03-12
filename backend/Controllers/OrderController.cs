@@ -40,6 +40,13 @@ namespace backend.Controllers
             var orders = await _orderService.GetOrdersByBuyerIdAsync(buyerId);
             return Ok(orders);
         }
+
+        [HttpGet("seller/{sellerId}")]
+        public async Task<IActionResult> GetOrdersBySellerId(int sellerId)
+        {
+            var orders = await _orderService.GetOrdersBySellerIdAsync(sellerId);
+            return Ok(orders);
+        }
     }
 
     public class BuyNowRequest

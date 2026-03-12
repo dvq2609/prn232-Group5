@@ -21,5 +21,10 @@ namespace backend.Services
         {
             return await _orderRepository.GetOrdersByBuyerIdAsync(buyerId);
         }
+
+        public async Task<List<OrderDto>> GetOrdersBySellerIdAsync(int sellerId)
+        {
+            return await _orderRepository.GetOrdersBySellerIdAsync(sellerId);
+        }
     }
 }

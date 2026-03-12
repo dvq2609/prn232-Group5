@@ -1,0 +1,231 @@
+@model frontEnd.Models.CreateFeedbackViewModel
+@{
+    ViewData["Title"] = "Leave Feedback";
+}
+
+<div class="max-w-3xl mx-auto">
+    <div class="mb-4">
+        <a asp-action="PurchaseHistory" asp-controller="Feedback"
+            class="text-sm text-blue-600 hover:underline flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">arrow_back</span> Back to Purchase History
+        </a>
+    </div>
+
+    <h1 class="text-2xl font-bold mb-6">Leave feedback</h1>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4 text-sm">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <form asp-action="LeaveFeedback" asp-controller="Feedback" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="OrderId" />
+        <input type="hidden" asp-for="ProductTitle" />
+        <input type="hidden" asp-for="ProductImage" />
+        <input type="hidden" asp-for="SellerName" />
+
+        <!-- Product + How did it go -->
+        <div class="border border-gray-200 rounded-lg p-6 mb-6">
+            <div class="flex gap-6">
+                <!-- Product Image & Info -->
+                <div class="flex items-start gap-4 w-2/5">
+                    <div class="w-20 h-20 flex-shrink-0 bg-gray-100 rounded overflow-hidden border border-gray-200">
+                        @if (!string.IsNullOrEmpty(Model.ProductImage))
+                        {
+                            <img src="~/@Model.ProductImage" alt="@Model.ProductTitle" class="w-full h-full object-cover" />
+                        }
+                        else
+                        {
+                            <div class="w-full h-full flex items-center justify-center">
+                                <span class="material-symbols-outlined text-2xl text-gray-400">image</span>
+                            </div>
+                        }
+                    </div>
+                    <div>
+                        <p class="font-medium text-sm leading-snug">@Model.ProductTitle</p>
+                        <p class="text-xs text-gray-500 mt-1">Sold by: <strong>@Model.SellerName</strong></p>
+                    </div>
+                </div>
+
+                <!-- How did it go? -->
+                <div class="w-3/5">
+                    <p class="text-lg font-semibold">How did it go?*</p>
+                    <p class="text-sm text-gray-500 mb-3">Rate your experience</p>
+                    <div class="flex gap-2" id="experience-buttons">
+                        <button type="button" data-value="5"
+                            class="exp-btn flex-1 py-2.5 rounded-full border-2 text-sm font-medium transition-all border-blue-600 bg-blue-600 text-white">
+                            Positive
+                        </button>
+                        <button type="button" data-value="3"
+                            class="exp-btn flex-1 py-2.5 rounded-full border-2 text-sm font-medium transition-all border-gray-300 bg-white text-gray-700 hover:border-gray-400">
+                            Neutral
+                        </button>
+                        <button type="button" data-value="1"
+                            class="exp-btn flex-1 py-2.5 rounded-full border-2 text-sm font-medium transition-all border-gray-300 bg-white text-gray-700 hover:border-gray-400">
+                            Negative
+                        </button>
+                    </div>
+                    <input type="hidden" asp-for="Rating" id="rating-input" value="5" />
+                    <span asp-validation-for="Rating" class="text-red-500 text-xs"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- What else would you add? -->
+        <div class="border border-gray-200 rounded-lg p-6 mb-6">
+            <div class="flex gap-6">
+                <div class="w-2/5">
+                    <p class="text-lg font-semibold">What else would you add?*</p>
+                    <p class="text-sm text-gray-500">Help the community with more details</p>
+                </div>
+                <div class="w-3/5 relative">
+                    <textarea asp-for="Comment" rows="4" maxlength="500" id="comment-textarea"
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                        placeholder="Great Seller! Would Highly Recommend! A++"></textarea>
+                    <div class="text-right text-xs text-gray-400 mt-1">
+                        <span id="char-count">0</span> / 500
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rate the details -->
+        <div class="border border-gray-200 rounded-lg p-6 mb-8">
+            <p class="text-lg font-semibold mb-6">Rate the details</p>
+
+            <!-- Item description (ExactSame) -->
+            <div class="flex gap-6 mb-6">
+                <div class="w-2/5">
+                    <p class="font-medium text-sm">Item description</p>
+                    <p class="text-xs text-gray-500">Item as described by seller</p>
+                </div>
+                <div class="w-3/5">
+                    <div class="flex items-center gap-1" id="exact-stars">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <button type="button" data-group="exact" data-value="@i"
+                                class="detail-star text-3xl transition-colors text-gray-300 hover:text-yellow-400 focus:outline-none">
+                                ☆
+                            </button>
+                        }
+                    </div>
+                    <input type="hidden" asp-for="ExactSame" id="exact-input" value="5" />
+                </div>
+            </div>
+
+            <!-- Shipping / Delivery On Time -->
+            <div class="flex gap-6 mb-6">
+                <div class="w-2/5">
+                    <p class="font-medium text-sm">Shipping costs</p>
+                    <p class="text-xs text-gray-500">Item arrived on time</p>
+                </div>
+                <div class="w-3/5">
+                    <div class="flex items-center gap-1" id="delivery-stars">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <button type="button" data-group="delivery" data-value="@i"
+                                class="detail-star text-3xl transition-colors text-gray-300 hover:text-yellow-400 focus:outline-none">
+                                ☆
+                            </button>
+                        }
+                    </div>
+                    <input type="hidden" asp-for="DeliveryOnTime" id="delivery-input" value="5" />
+                </div>
+            </div>
+
+            <!-- Communication -->
+            <div class="flex gap-6">
+                <div class="w-2/5">
+                    <p class="font-medium text-sm">Communication</p>
+                    <p class="text-xs text-gray-500">Seller's responsiveness</p>
+                </div>
+                <div class="w-3/5">
+                    <div class="flex items-center gap-1" id="comm-stars">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <button type="button" data-group="comm" data-value="@i"
+                                class="detail-star text-3xl transition-colors text-gray-300 hover:text-yellow-400 focus:outline-none">
+                                ☆
+                            </button>
+                        }
+                    </div>
+                    <input type="hidden" asp-for="Communication" id="comm-input" value="5" />
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit"
+            class="bg-blue-600 text-white px-10 py-3 rounded-full text-sm font-semibold hover:bg-blue-700 transition-colors">
+            Leave feedback
+        </button>
+    </form>
+</div>
+
+<script>
+    // Experience buttons (Positive / Neutral / Negative)
+    const expBtns = document.querySelectorAll('.exp-btn');
+    const ratingInput = document.getElementById('rating-input');
+
+    expBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            ratingInput.value = btn.dataset.value;
+            expBtns.forEach(b => {
+                b.classList.remove('border-blue-600', 'bg-blue-600', 'text-white');
+                b.classList.add('border-gray-300', 'bg-white', 'text-gray-700');
+            });
+            btn.classList.remove('border-gray-300', 'bg-white', 'text-gray-700');
+            btn.classList.add('border-blue-600', 'bg-blue-600', 'text-white');
+        });
+    });
+
+    // Detail star ratings
+    const starGroups = {
+        exact: { stars: document.querySelectorAll('#exact-stars .detail-star'), input: document.getElementById('exact-input') },
+        delivery: { stars: document.querySelectorAll('#delivery-stars .detail-star'), input: document.getElementById('delivery-input') },
+        comm: { stars: document.querySelectorAll('#comm-stars .detail-star'), input: document.getElementById('comm-input') }
+    };
+
+    document.querySelectorAll('.detail-star').forEach(star => {
+        star.addEventListener('click', () => {
+            const group = star.dataset.group;
+            const val = parseInt(star.dataset.value);
+            const g = starGroups[group];
+            g.input.value = val;
+            updateDetailStars(g.stars, val);
+        });
+        star.addEventListener('mouseenter', () => {
+            const group = star.dataset.group;
+            const val = parseInt(star.dataset.value);
+            updateDetailStars(starGroups[group].stars, val);
+        });
+    });
+
+    Object.values(starGroups).forEach(g => {
+        g.stars[0].closest('.flex').addEventListener('mouseleave', () => {
+            updateDetailStars(g.stars, parseInt(g.input.value) || 0);
+        });
+    });
+
+    function updateDetailStars(stars, val) {
+        stars.forEach(s => {
+            const v = parseInt(s.dataset.value);
+            s.textContent = v <= val ? '★' : '☆';
+            s.classList.toggle('text-yellow-400', v <= val);
+            s.classList.toggle('text-gray-300', v > val);
+        });
+    }
+
+    // Character count
+    const textarea = document.getElementById('comment-textarea');
+    const charCount = document.getElementById('char-count');
+    textarea.addEventListener('input', () => {
+        charCount.textContent = textarea.value.length;
+    });
+
+    // Init: fill all detail stars to 5 by default
+    Object.values(starGroups).forEach(g => updateDetailStars(g.stars, 5));
+</script>

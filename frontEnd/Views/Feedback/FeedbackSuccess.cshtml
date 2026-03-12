@@ -1,0 +1,37 @@
+@{
+    ViewData["Title"] = "Feedback Submitted";
+    var sellerName = TempData["FeedbackSellerName"]?.ToString() ?? "the seller";
+    var productTitle = TempData["FeedbackProductTitle"]?.ToString() ?? "your item";
+    var ratingStr = TempData["FeedbackRating"]?.ToString() ?? "5";
+    int rating = int.TryParse(ratingStr, out int r) ? r : 5;
+}
+
+<div class="max-w-lg mx-auto text-center py-12">
+    <div class="mb-6">
+        <span class="material-symbols-outlined text-6xl text-green-500">check_circle</span>
+    </div>
+    <h1 class="text-2xl font-bold mb-2">Thank you for your feedback!</h1>
+    <p class="text-gray-600 mb-4">Your feedback for <strong>@productTitle</strong> has been submitted.</p>
+
+    <div class="flex justify-center gap-0.5 mb-4">
+        @for (int i = 1; i <= 5; i++)
+        {
+            <span class="text-2xl @(i <= rating ? "text-yellow-400" : "text-gray-300")">★</span>
+        }
+    </div>
+
+    <p class="text-sm text-gray-500 mb-8">
+        You rated <strong>@sellerName</strong> @rating out of 5 stars.
+    </p>
+
+    <div class="flex justify-center gap-3">
+        <a asp-action="PurchaseHistory" asp-controller="Feedback"
+            class="bg-blue-600 text-white px-6 py-2.5 rounded-full text-sm font-medium hover:bg-blue-700 transition-colors">
+            Back to Purchase History
+        </a>
+        <a asp-action="MyFeedbacks" asp-controller="Feedback"
+            class="border border-gray-300 text-gray-700 px-6 py-2.5 rounded-full text-sm font-medium hover:bg-gray-50 transition-colors">
+            View My Feedbacks
+        </a>
+    </div>
+</div>

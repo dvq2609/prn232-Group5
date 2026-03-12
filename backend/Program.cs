@@ -8,6 +8,10 @@ using backend.Services;
 using Sieve.Services;
 using backend.Repositories.Review;
 using backend.Services.Review;
+using backend.Repositories.Feedback;
+using backend.Services.Feedback;
+using backend.Repositories.SellerReview;
+using backend.Services.SellerReview;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -33,6 +37,12 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 
 builder.Services.AddScoped<IDisputeRepository, DisputeRepository>();
 builder.Services.AddScoped<IDisputeService, DisputeService>();
+
+builder.Services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+builder.Services.AddScoped<IFeedbackService, FeedbackService>();
+
+builder.Services.AddScoped<ISellerReviewRepository, SellerReviewRepository>();
+builder.Services.AddScoped<ISellerReviewService, SellerReviewService>();
 
 builder.Services.AddScoped<ISieveProcessor, SieveProcessor>();
 builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));

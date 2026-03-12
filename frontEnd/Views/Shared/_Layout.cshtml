@@ -47,10 +47,14 @@
 
                 @if (role == "buyer")
                 {
+                    <a class="hover:underline" asp-action="PurchaseHistory" asp-controller="Feedback">My Purchases</a>
+                    <a class="hover:underline" asp-action="MyFeedbacks" asp-controller="Feedback">My Feedbacks</a>
                     <a class="hover:underline" asp-action="BuyerDisputes" asp-controller="Dispute">Buyer Disputes</a>
                 }
                 else if (role == "seller")
                 {
+                    <a class="hover:underline" asp-action="SellerOrders" asp-controller="SellerReview">Sold Orders</a>
+                    <a class="hover:underline" asp-action="MyReviews" asp-controller="SellerReview">My Reviews</a>
                     <a class="hover:underline" asp-action="SellerDisputes" asp-controller="Dispute">Seller Disputes</a>
                 }
                 else if (role == "admin")

@@ -7,5 +7,6 @@ namespace backend.Services
     {
         Task<OrderTable> BuyNowAsync(int buyerId, int productId, decimal unitPrice);
         Task<List<OrderDto>> GetOrdersByBuyerIdAsync(int buyerId);
+        Task<List<OrderDto>> GetOrdersBySellerIdAsync(int sellerId);
     }
 }
