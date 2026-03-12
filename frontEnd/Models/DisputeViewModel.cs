@@ -12,6 +12,8 @@ namespace frontEnd.Models
         public DateTime? SubmittedDate { get; set; }
         public DateTime? SolvedDate { get; set; }
         public string? Comment { get; set; }
+        public string? SellerResponse { get; set; }
+        public string? BuyerResponse { get; set; }
         public List<IFormFile>? Images { get; set; }
     }
     public class DisputeResponse
@@ -28,7 +30,9 @@ namespace frontEnd.Models
         public DateTime? SubmittedDate { get; set; }
         public DateTime? SolvedDate { get; set; }
         public string? Comment { get; set; }
+        public string? SellerResponse { get; set; }
+        public string? BuyerResponse { get; set; }
         public List<ImageViewModel>? Images { get; set; }
- 
+
     }
 }

@@ -22,6 +22,8 @@ public partial class Dispute
     public DateTime? SolvedDate { get; set; }
 
     public string? Comment { get; set; }
+    public string? SellerResponse { get; set; }
+    public string? BuyerResponse { get; set; }
 
     public virtual ICollection<DisputeImage> DisputeImages { get; set; } = new List<DisputeImage>();
 

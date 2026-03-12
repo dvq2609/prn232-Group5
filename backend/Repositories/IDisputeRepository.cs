@@ -15,5 +15,6 @@ namespace backend.Repositories
         Task<bool> HasPendingDisputeAsync(int OrderId);
         Task AddDisputeImages(List<DisputeImage> images);
         Task<DisputeDto> GetDisputeById(int id);
+        Task<Dispute?> GetDisputeEntityById(int id);
     }
 }

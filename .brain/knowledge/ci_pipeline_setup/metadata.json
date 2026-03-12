@@ -1,0 +1,17 @@
+{
+    "summary": "This knowledge item captures the initial setup and configuration of the CI (Continuous Integration) pipeline for the Clone eBay project using GitHub Actions. It outlines the core decisions, tech stack, and workflow configuration for building both the .NET backend and Node.js frontend.",
+    "timestamps": {
+        "created": "2026-03-09T10:48:00+07:00",
+        "last_updated": "2026-03-09T10:59:00+07:00"
+    },
+    "references": [
+        {
+            "type": "workflow",
+            "path": ".github/workflows/ci.yml"
+        },
+        {
+            "type": "plan",
+            "path": "docs/plans/260309-1048-ci-pipeline"
+        }
+    ]
+}

@@ -40,6 +40,11 @@ namespace backend.Repositories
                 Status = "Pending",
                 SubmittedDate = DateTime.Now,
             };
+
+            // Cập nhật trạng thái của đơn hàng thành Dispute
+            order.Status = "Disputed";
+            _context.OrderTables.Update(order);
+
             await _context.Disputes.AddAsync(newDispute);
             await _context.SaveChangesAsync();
             return newDispute;
@@ -66,6 +71,8 @@ namespace backend.Repositories
                 Comment = d.Comment,
                 Resolution = d.Resolution,
                 RaisedBy = d.RaisedByNavigation.Username,
+                SellerResponse = d.SellerResponse,
+                BuyerResponse = d.BuyerResponse,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -106,7 +113,9 @@ namespace backend.Repositories
                 SolvedDate = d.SolvedDate,
                 Comment = d.Comment,
                 Resolution = d.Resolution,
+                SellerResponse = d.SellerResponse,
                 RaisedBy = d.RaisedByNavigation.Username,
+                BuyerResponse = d.BuyerResponse,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -152,6 +161,8 @@ namespace backend.Repositories
                 Comment = d.Comment,
                 Resolution = d.Resolution,
                 RaisedBy = d.RaisedByNavigation.Username,
+                SellerResponse = d.SellerResponse,
+                BuyerResponse = d.BuyerResponse,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -191,7 +202,9 @@ namespace backend.Repositories
                 SolvedDate = d.SolvedDate,
                 Comment = d.Comment,
                 Resolution = d.Resolution,
+                SellerResponse = d.SellerResponse,
                 RaisedBy = d.RaisedByNavigation.Username,
+                BuyerResponse = d.BuyerResponse,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -206,9 +219,19 @@ namespace backend.Repositories
             return dispute;
         }
 
-        public Task UpdateDispute(Dispute dispute)
+        public async Task UpdateDispute(Dispute dispute)
         {
-            throw new NotImplementedException();
+            _context.Disputes.Update(dispute);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Dispute?> GetDisputeEntityById(int id)
+        {
+            return await _context.Disputes
+                .Include(d => d.Order)
+                .ThenInclude(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+                .FirstOrDefaultAsync(d => d.Id == id);
         }
         public async Task<bool> HasPendingDisputeAsync(int orderId)
         {
