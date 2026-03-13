@@ -76,6 +76,7 @@
                             <option value="Negotiating">Đang thương lượng</option>
                             <option value="Escalated">Đã gửi lên Admin</option>
                             <option value="Resolved_Refunded">Đã hoàn tiền</option>
+                            <option value="Resolved_NotRefunded">Không hoàn tiền</option>
                         </select>
                     </div>
                     <div class="flex items-center gap-2">
@@ -144,6 +145,8 @@
                             { badgeClass = "bg-orange-100 text-orange-700"; statusLabel = "Đã gửi lên Admin"; }
                             else if (s == "resolved_refunded")
                             { badgeClass = "bg-emerald-100 text-emerald-700"; statusLabel = "Đã hoàn tiền"; }
+                            else if (s == "resolved_notrefunded")
+                            { badgeClass = "bg-red-100 text-red-700"; statusLabel = "Không hoàn tiền"; }
                             else
                             { badgeClass = "bg-gray-100 text-gray-600"; statusLabel = dispute.Status ?? "—"; }
 

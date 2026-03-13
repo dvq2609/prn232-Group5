@@ -174,5 +174,28 @@ namespace backend.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost("{id}/admin-response")]
+        public async Task<IActionResult> AdminResponse(int id, [FromBody] DisputeAdminResponseDto responseDto)
+        {
+            var userIdString = User.FindFirstValue("AccountId");
+            if (userIdString == null) return Unauthorized();
+
+            int adminId = int.Parse(userIdString);
+            try
+            {
+                var result = await _disputeService.ProcessAdminResponseAsync(id, responseDto, adminId);
+                if (result)
+                {
+                    return Ok(new { message = "Gửi phản hồi cho người bán thành công." });
+                }
+                return BadRequest("Không thể gửi phản hồi.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }

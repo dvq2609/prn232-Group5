@@ -73,6 +73,7 @@ namespace backend.Repositories
                 RaisedBy = d.RaisedByNavigation.Username,
                 SellerResponse = d.SellerResponse,
                 BuyerResponse = d.BuyerResponse,
+                AdminResponse = d.AdminResponse,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -116,6 +117,7 @@ namespace backend.Repositories
                 SellerResponse = d.SellerResponse,
                 RaisedBy = d.RaisedByNavigation.Username,
                 BuyerResponse = d.BuyerResponse,
+                AdminResponse = d.AdminResponse,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -163,6 +165,7 @@ namespace backend.Repositories
                 RaisedBy = d.RaisedByNavigation.Username,
                 SellerResponse = d.SellerResponse,
                 BuyerResponse = d.BuyerResponse,
+                AdminResponse = d.AdminResponse,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {
@@ -205,6 +208,7 @@ namespace backend.Repositories
                 SellerResponse = d.SellerResponse,
                 RaisedBy = d.RaisedByNavigation.Username,
                 BuyerResponse = d.BuyerResponse,
+                AdminResponse = d.AdminResponse,
                 SellerName = d.Order.OrderItems.Select(oi => oi.Product != null && oi.Product.Seller != null ? oi.Product.Seller.Username : null).FirstOrDefault(),
                 Images = d.DisputeImages.Select(i => new ImageDto
                 {

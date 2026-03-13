@@ -207,7 +207,9 @@ public partial class CloneEbayDbContext : DbContext
             entity.Property(e => e.SubmittedDate)
                 .HasColumnType("datetime")
                 .HasColumnName("submittedDate");
-
+            entity.Property(e => e.AdminResponse).HasColumnName("adminResponse");
+            entity.Property(e => e.SellerResponse).HasColumnName("sellerResponse");
+            entity.Property(e => e.BuyerResponse).HasColumnName("buyerResponse");
             entity.HasOne(d => d.Order).WithMany(p => p.Disputes)
                 .HasForeignKey(d => d.OrderId)
                 .HasConstraintName("FK__Dispute__orderId__693CA210");

@@ -16,5 +16,6 @@ namespace backend.Services
         Task<DisputeDto> GetDisputeById(int id);
         Task<bool> ProcessSellerResponseAsync(int disputeId, DisputeSellerResponseDto responseDto, int sellerId);
         Task<bool> ProcessBuyerResponseAsync(int disputeId, DisputeBuyerResponseDto responseDto, int buyerId);
+        Task<bool> ProcessAdminResponseAsync(int disputeId, DisputeAdminResponseDto responseDto, int adminId);
     }
 }
