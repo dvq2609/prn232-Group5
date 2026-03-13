@@ -367,5 +367,41 @@ namespace frontEnd.Controllers
 
             return RedirectToAction("BuyerDisputes");
         }
+        [HttpPost]
+        public async Task<IActionResult> AdminResponse(int id, DisputeAdminResponseDto responseDto)
+        {
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                var token = HttpContext.Session.GetString("Token");
+                var role = HttpContext.Session.GetString("Role");
+                if (role != "admin")
+                {
+                    return RedirectToAction("Login", "Auth");
+                }
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+
+                var response = await client.PostAsJsonAsync($"https://localhost:7290/api/disputes/{id}/admin-response", responseDto);
+                if (response.IsSuccessStatusCode)
+                {
+                    TempData["SuccessMessage"] = "Gửi phản hồi thành công.";
+                }
+                else
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    TempData["ErrorMessage"] = "Không thể gửi phản hồi: " + error;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                TempData["ErrorMessage"] = "Lỗi hệ thống: " + ex.Message;
+            }
+
+            return RedirectToAction("AllDisputes");
+        }
     }
 }

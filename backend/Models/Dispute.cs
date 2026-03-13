@@ -24,7 +24,7 @@ public partial class Dispute
     public string? Comment { get; set; }
     public string? SellerResponse { get; set; }
     public string? BuyerResponse { get; set; }
-
+    public string? AdminResponse { get; set; }
     public virtual ICollection<DisputeImage> DisputeImages { get; set; } = new List<DisputeImage>();
 
     public virtual OrderTable? Order { get; set; }

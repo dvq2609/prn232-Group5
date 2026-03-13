@@ -21,6 +21,7 @@ namespace backend.DTOs
         public string? Resolution { get; set; }
         public string? SellerResponse { get; set; }
         public string? BuyerResponse { get; set; }
+        public string? AdminResponse { get; set; }
         public List<ImageDto>? Images { get; set; }
     }
     public class DisputeCreateDto

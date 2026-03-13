@@ -14,6 +14,7 @@ namespace frontEnd.Models
         public string? Comment { get; set; }
         public string? SellerResponse { get; set; }
         public string? BuyerResponse { get; set; }
+        public string? AdminResponse { get; set; }
         public List<IFormFile>? Images { get; set; }
     }
     public class DisputeResponse
@@ -32,6 +33,7 @@ namespace frontEnd.Models
         public string? Comment { get; set; }
         public string? SellerResponse { get; set; }
         public string? BuyerResponse { get; set; }
+        public string? AdminResponse { get; set; }
         public List<ImageViewModel>? Images { get; set; }
 
     }

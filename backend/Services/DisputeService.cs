@@ -101,16 +101,46 @@ namespace backend.Services
                     dispute.Status = "Resolved_Refunded";
                     dispute.Resolution = "Người mua đồng ý với đề nghị của người bán";
                     if (dispute.Order != null) dispute.Order.Status = "Refunded";
+                    dispute.SolvedDate = DateTime.Now;
                     break;
                 case DisputeBuyerActionType.Decline:
                     dispute.Status = "Escalated";
                     dispute.Resolution = "Người mua từ chối đề nghị của người bán";
+
                     break;
                 default:
                     throw new Exception("Hành động không hợp lệ");
             }
 
             dispute.BuyerResponse = responseDto.Message;
+
+            await _disputeRepository.UpdateDispute(dispute);
+            return true;
+        }
+        public async Task<bool> ProcessAdminResponseAsync(int disputeId, DisputeAdminResponseDto responseDto, int adminId)
+        {
+            var dispute = await _disputeRepository.GetDisputeEntityById(disputeId);
+            if (dispute == null) throw new Exception("Dispute not found");
+
+            if (dispute.Status != "Escalated") throw new Exception("Dispute is not in a state that can be responded to by admin");
+
+            switch (responseDto.Action)
+            {
+                case DisputeAdminActionType.BuyerWin:
+                    dispute.Status = "Resolved_Refunded";
+                    dispute.Resolution = "Admin quyết định hoàn tiền cho người mua";
+                    if (dispute.Order != null) dispute.Order.Status = "Refunded";
+                    break;
+                case DisputeAdminActionType.SellerWin:
+                    dispute.Status = "Resolved_NotRefunded";
+                    dispute.Resolution = "Admin quyết định không hoàn tiền cho người mua";
+                    break;
+                default:
+                    throw new Exception("Hành động không hợp lệ");
+            }
+
+            dispute.AdminResponse = responseDto.Message;
+            dispute.SolvedDate = DateTime.Now;
 
             await _disputeRepository.UpdateDispute(dispute);
             return true;
