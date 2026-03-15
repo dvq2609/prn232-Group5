@@ -1,0 +1,306 @@
+@{
+    ViewData["Title"] = "Messages";
+    Layout = "_Layout";
+}
+
+<link href="~/css/chat-page.css" rel="stylesheet" />
+
+<div class="cp-container">
+    <!-- Sidebar / Folders -->
+    <div class="cp-sidebar">
+        <div class="cp-sidebar-title">
+            <span class="material-symbols-outlined">mail</span> Messages
+        </div>
+        
+        <ul class="cp-nav-section">
+            <li class="active">Inbox</li>
+            <li>From members</li>
+            <li>Unread from members</li>
+            <li>From eBay</li>
+            <li>Unread from eBay</li>
+            <li>Sent</li>
+            <li>Deleted</li>
+            <li>Archive</li>
+        </ul>
+        
+        <div class="cp-nav-group-title">Folders</div>
+        <div class="cp-nav-link">Create folder</div>
+    </div>
+    
+    <!-- Middle Column: Conversations List -->
+    <div class="cp-list">
+        <div class="cp-search-area">
+            <div class="cp-search-box">
+                <span class="material-symbols-outlined">search</span>
+                <input type="text" id="pageSearchUserInput" placeholder="Search User ID to chat..." />
+                <button onclick="startNewPageChat()" style="position:absolute; right:10px; top:5px; background: #3665f3; color: white; border: none; border-radius: 15px; padding: 5px 15px; cursor: pointer; font-size: 0.8rem;">Chat</button>
+            </div>
+        </div>
+        
+        <div class="cp-list-actions">
+            <input type="checkbox" />
+            <span class="material-symbols-outlined" style="cursor:pointer" title="Delete">delete</span>
+            <span class="material-symbols-outlined" style="cursor:pointer" title="Mark as read">mark_email_read</span>
+            <span class="material-symbols-outlined" style="cursor:pointer" title="Mark as unread">mark_email_unread</span>
+            <span class="material-symbols-outlined" style="cursor:pointer" title="Archive">archive</span>
+        </div>
+        
+        <div class="cp-conversations" id="pageContactList">
+            <div style="padding: 30px; text-align: center; color: #888;">Loading...</div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Conversation View -->
+    <div class="cp-conversation" id="pageChatArea" style="display: none;">
+        <div class="cp-conv-header">
+            <h3 id="pageChatName">User Name</h3>
+            <span class="material-symbols-outlined" style="cursor:pointer; color:#555;">more_horiz</span>
+        </div>
+        
+        <div class="cp-conv-warning">
+            Don't exchange contact info to <a href="#">buy or sell outside cloneEbay</a>. We scan and, in case of suspicious activity, manually analyze messages to identify potential fraud and <a href="#">policy violations</a>.
+        </div>
+        
+        <div class="cp-conv-messages" id="pageChatMessages">
+            <!-- Messages render here -->
+        </div>
+        
+        <div class="cp-conv-input">
+            <span class="material-symbols-outlined" style="font-size:28px; color:#555; margin-right:15px; margin-bottom:10px;">image</span>
+            <div class="cp-input-box">
+                <textarea id="pageMessageInput" placeholder="Send message"></textarea>
+                <div class="cp-input-actions">
+                    <div class="cp-input-actions-left">
+                        <label>
+                            <input type="checkbox" /> Send a copy to my email
+                        </label>
+                    </div>
+                    <button id="pageSendBtn" class="cp-send-btn" disabled>
+                        <span class="material-symbols-outlined" style="font-size: 20px;">send</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Empty State -->
+    <div class="cp-no-chat-selected" id="pageNoChatSelected">
+        <span class="material-symbols-outlined" style="font-size:64px; margin-bottom:20px; color:#ccc;">chat_bubble_outline</span>
+        <p>Select a conversation to start messaging</p>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+<script>
+    const token = '@ViewBag.Token';
+    const currentUserId = parseInt('@ViewBag.CurrentUserId', 10);
+    const backendUrl = "https://localhost:7290";
+    
+    let activeContactId = null;
+    let connection = new signalR.HubConnectionBuilder()
+        .withUrl(`${backendUrl}/chathub`, {
+            accessTokenFactory: () => token,
+            skipNegotiation: true, // For WebSockets
+            transport: signalR.HttpTransportType.WebSockets
+        })
+        .withAutomaticReconnect()
+        .build();
+
+    // Start Connection
+    connection.start().then(() => {
+        console.log("Connected to ChatHub via Page");
+        loadContacts();
+    }).catch(err => console.error("SignalR Connection Error: ", err.toString()));
+
+    connection.on("ReceiveMessage", (message) => {
+        loadContacts(); 
+        if (message.senderId === activeContactId || message.receiverId === activeContactId) {
+            appendMessage(message);
+        }
+    });
+
+    connection.on("MessageSent", (message) => {
+        loadContacts();
+        if (message.receiverId === activeContactId) {
+            appendMessage(message);
+        }
+    });
+
+    const msgInput = document.getElementById("pageMessageInput");
+    const sendBtn = document.getElementById("pageSendBtn");
+    
+    msgInput.addEventListener("input", function() {
+        if (this.value.trim().length > 0) {
+            sendBtn.classList.add("active");
+            sendBtn.disabled = false;
+        } else {
+            sendBtn.classList.remove("active");
+            sendBtn.disabled = true;
+        }
+    });
+
+    msgInput.addEventListener("keypress", function(e) {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    sendBtn.addEventListener("click", sendMessage);
+
+    function sendMessage() {
+        if (!activeContactId) return;
+        const content = msgInput.value.trim();
+        if (content === "") return;
+
+        connection.invoke("SendMessage", activeContactId, content).catch(console.error);
+        msgInput.value = "";
+        
+        sendBtn.classList.remove("active");
+        sendBtn.disabled = true;
+    }
+
+    async function loadContacts() {
+        try {
+            const response = await fetch(`${backendUrl}/api/message/contacts`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const contacts = await response.json();
+                renderContacts(contacts);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    function renderContacts(contacts) {
+        const list = document.getElementById("pageContactList");
+        list.innerHTML = "";
+        
+        if (!contacts || contacts.length === 0) {
+            list.innerHTML = `<div style="padding: 20px; text-align: center; color: #888;">No conversations yet.</div>`;
+            return;
+        }
+        
+        contacts.forEach(contact => {
+            const item = document.createElement("div");
+            item.className = `cp-convo-item ${contact.id === activeContactId ? 'active' : ''}`;
+            item.onclick = () => selectContact(contact, item);
+            
+            const avatarTxt = contact.username ? contact.username.charAt(0).toUpperCase() : 'U';
+            let lastMsgTxt = contact.lastMessage ? contact.lastMessage.content : "No messages yet";
+            
+            let timeTxt = "";
+            if (contact.lastMessage) {
+                const d = new Date(contact.lastMessage.timestamp);
+                timeTxt = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
+            }
+            
+            item.innerHTML = `
+                <input type="checkbox" class="cp-convo-checkbox" onclick="event.stopPropagation()" />
+                <div class="cp-convo-avatar">${avatarTxt}</div>
+                <div class="cp-convo-content">
+                    <div class="cp-convo-header-row">
+                        <div class="cp-convo-name">${contact.username || 'User ' + contact.id}</div>
+                        <div class="cp-convo-time">${timeTxt}</div>
+                    </div>
+                    <div class="cp-convo-preview">${lastMsgTxt}</div>
+                </div>
+            `;
+            
+            list.appendChild(item);
+        });
+    }
+
+    async function selectContact(contact, element = null) {
+        activeContactId = contact.id;
+        
+        document.getElementById("pageNoChatSelected").style.display = "none";
+        document.getElementById("pageChatArea").style.display = "flex";
+        
+        document.getElementById("pageChatName").innerText = contact.username || 'User ' + contact.id;
+        
+        // Highlight active
+        const items = document.querySelectorAll('.cp-convo-item');
+        items.forEach(el => el.classList.remove('active'));
+        if (element) {
+            element.classList.add('active');
+        } else {
+            loadContacts(); // Refresh list to highlight
+        }
+        
+        // Fetch history
+        try {
+            const response = await fetch(`${backendUrl}/api/message/history/${contact.id}`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (response.ok) {
+                const messages = await response.json();
+                renderMessages(messages);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    function renderMessages(messages) {
+        const chatMessages = document.getElementById("pageChatMessages");
+        chatMessages.innerHTML = "";
+        
+        messages.forEach(msg => {
+            appendMessage(msg, false);
+        });
+        
+        scrollToBottom();
+    }
+
+    function appendMessage(message, autoScroll = true) {
+        const isSent = message.senderId === currentUserId;
+        const msgWrapper = document.createElement("div");
+        msgWrapper.className = `cp-message-wrapper ${isSent ? 'sent' : 'received'}`;
+        
+        const contentDiv = document.createElement("div");
+        
+        const bubbleDiv = document.createElement("div");
+        bubbleDiv.className = "cp-message-bubble";
+        bubbleDiv.innerText = message.content;
+        
+        const timeDiv = document.createElement("div");
+        timeDiv.className = "cp-message-time";
+        const msgDate = new Date(message.timestamp);
+        timeDiv.innerText = `${msgDate.getHours().toString().padStart(2, '0')}:${msgDate.getMinutes().toString().padStart(2, '0')}`;
+        
+        contentDiv.appendChild(bubbleDiv);
+        contentDiv.appendChild(timeDiv);
+        
+        msgWrapper.appendChild(contentDiv);
+        
+        document.getElementById("pageChatMessages").appendChild(msgWrapper);
+        
+        if (autoScroll) {
+            scrollToBottom();
+        }
+    }
+
+    function scrollToBottom() {
+        const chatMessages = document.getElementById("pageChatMessages");
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    window.startNewPageChat = function() {
+        const searchInput = document.getElementById("pageSearchUserInput");
+        const userId = parseInt(searchInput.value.trim(), 10);
+        
+        if (userId && userId !== currentUserId) {
+            const dummyContact = {
+                id: userId,
+                username: "User " + userId
+            };
+            selectContact(dummyContact);
+            searchInput.value = "";
+        } else if (userId === currentUserId) {
+            alert("You cannot chat with yourself.");
+        }
+    };
+</script>
