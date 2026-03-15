@@ -1,0 +1,265 @@
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var token = HttpContextAccessor.HttpContext.Session.GetString("Token");
+    var accountIdStr = HttpContextAccessor.HttpContext.Session.GetString("AccountId");
+    int? currentUserId = null;
+    if (!string.IsNullOrEmpty(accountIdStr) && int.TryParse(accountIdStr, out int parsedId))
+    {
+        currentUserId = parsedId;
+    }
+}
+
+@if (!string.IsNullOrEmpty(token) && currentUserId != null)
+{
+    <link href="~/css/chat.css" rel="stylesheet" />
+    <div class="chat-widget-wrapper">
+        <div class="chat-window" id="chatWindow">
+            <!-- Contact List Panel -->
+            <div class="chat-panel panel-contacts">
+                <div class="chat-header">
+                    <span>Messages</span>
+                    <button class="chat-btn" onclick="toggleChatWindow()">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div style="padding: 10px; border-bottom: 1px solid #eaeaea; display: flex; gap: 8px;">
+                    <input type="text" id="widgetSearchUserInput" placeholder="Search user ID to chat..." style="flex: 1; padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem;" />
+                    <button onclick="startNewChat()" style="background: #007bff; color: white; border: none; border-radius: 4px; padding: 0 10px; cursor: pointer;">
+                        Chat
+                    </button>
+                </div>
+                <div class="contact-list" id="widgetContactList">
+                    <div style="padding: 20px; text-align: center; color: #888;">Loading...</div>
+                </div>
+            </div>
+
+            <!-- Chat Area Panel -->
+            <div class="chat-panel panel-chat">
+                <div class="chat-header">
+                    <div class="chat-header-left">
+                        <button class="chat-btn" onclick="backToContacts()">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                        </button>
+                        <span id="widgetChatName">User Name</span>
+                    </div>
+                    <button class="chat-btn" onclick="toggleChatWindow()">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+                <div class="chat-messages" id="widgetChatMessages">
+                    <!-- Messages go here -->
+                </div>
+                <div class="chat-input-area">
+                    <input type="text" id="widgetMessageInput" placeholder="Type a message..." autocomplete="off" />
+                    <button id="widgetSendBtn" onclick="widgetSendMessage()">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">send</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-trigger" onclick="toggleChatWindow()">
+            <span class="material-symbols-outlined" style="font-size: 28px;">chat</span>
+            <div class="chat-badge" id="chatUnreadCount" style="display: none;">0</div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.0/signalr.min.js"></script>
+    <script>
+        (function() {
+            const token = '@token';
+            const currentUserId = @currentUserId;
+            const backendUrl = "https://localhost:7290";
+            
+            let activeContactId = null;
+            let unreadCount = 0;
+            let isWindowOpen = false;
+
+            const chatWindow = document.getElementById("chatWindow");
+            const contactListEl = document.getElementById("widgetContactList");
+            const chatMessagesEl = document.getElementById("widgetChatMessages");
+            const badgeEl = document.getElementById("chatUnreadCount");
+            
+            window.toggleChatWindow = function() {
+                isWindowOpen = !isWindowOpen;
+                if (isWindowOpen) {
+                    chatWindow.classList.add("open");
+                    unreadCount = 0;
+                    updateBadge();
+                } else {
+                    chatWindow.classList.remove("open");
+                }
+            };
+
+            window.backToContacts = function() {
+                chatWindow.classList.remove("in-chat");
+                activeContactId = null;
+            };
+
+            let connection = new signalR.HubConnectionBuilder()
+                .withUrl(`${backendUrl}/chathub`, {
+                    accessTokenFactory: () => token,
+                    skipNegotiation: true,
+                    transport: signalR.HttpTransportType.WebSockets
+                })
+                .withAutomaticReconnect()
+                .build();
+
+            connection.start().then(() => {
+                loadContacts();
+            }).catch(console.error);
+
+            connection.on("ReceiveMessage", (message) => {
+                loadContacts(); // Update latest msg in list
+                
+                if (activeContactId === message.senderId || activeContactId === message.receiverId) {
+                    appendMessage(message);
+                } else {
+                    if (!isWindowOpen) {
+                        unreadCount++;
+                        updateBadge();
+                    }
+                }
+            });
+
+            connection.on("MessageSent", (message) => {
+                loadContacts();
+                if (activeContactId === message.receiverId) {
+                    appendMessage(message);
+                }
+            });
+
+            function updateBadge() {
+                if (unreadCount > 0) {
+                    badgeEl.style.display = "flex";
+                    badgeEl.innerText = unreadCount > 9 ? "9+" : unreadCount;
+                } else {
+                    badgeEl.style.display = "none";
+                }
+            }
+
+            document.getElementById("widgetMessageInput").addEventListener("keypress", function(e) {
+                if (e.key === "Enter") {
+                    widgetSendMessage();
+                }
+            });
+
+            window.widgetSendMessage = function() {
+                if (!activeContactId) return;
+                const msgInput = document.getElementById("widgetMessageInput");
+                const content = msgInput.value.trim();
+                if (content === "") return;
+
+                connection.invoke("SendMessage", activeContactId, content).catch(console.error);
+                msgInput.value = "";
+            };
+
+            async function loadContacts() {
+                try {
+                    const res = await fetch(`${backendUrl}/api/message/contacts`, {
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        const contacts = await res.json();
+                        renderContacts(contacts);
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+
+            function renderContacts(contacts) {
+                contactListEl.innerHTML = "";
+                if (!contacts || contacts.length === 0) {
+                    contactListEl.innerHTML = `<div style="padding: 30px 20px; text-align: center; color: #888;">
+                        <span class="material-symbols-outlined" style="font-size: 40px; color: #ccc; margin-bottom: 10px;">chat_bubble_outline</span><br>
+                        No active conversations yet.<br>
+                        <span style="font-size: 0.8rem;">Use the search bar above to enter a User ID and start chatting.</span>
+                    </div>`;
+                    return;
+                }
+                
+                contacts.forEach(contact => {
+                    const item = document.createElement("div");
+                    item.className = "contact-item";
+                    item.onclick = () => selectContact(contact);
+                    
+                    const avatarTxt = contact.username ? contact.username.charAt(0).toUpperCase() : 'U';
+                    const lastMsgTxt = contact.lastMessage ? contact.lastMessage.content : "No messages yet";
+                    
+                    item.innerHTML = `
+                        <div class="contact-avatar">${avatarTxt}</div>
+                        <div class="contact-info">
+                            <div class="contact-name">${contact.username || 'User'}</div>
+                            <div class="contact-last-msg">${lastMsgTxt}</div>
+                        </div>
+                    `;
+                    contactListEl.appendChild(item);
+                });
+            }
+
+            window.selectContact = async function(contact) {
+                activeContactId = contact.id;
+                document.getElementById("widgetChatName").innerText = contact.username || 'User';
+                chatWindow.classList.add("in-chat");
+                
+                // Fetch history
+                try {
+                    const res = await fetch(`${backendUrl}/api/message/history/${contact.id}`, {
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+                    if (res.ok) {
+                        const messages = await res.json();
+                        chatMessagesEl.innerHTML = "";
+                        messages.forEach(msg => appendMessage(msg, false));
+                        scrollToBottom();
+                    }
+                } catch (e) {
+                    console.error(e);
+                }
+            };
+
+            function appendMessage(message, autoScroll = true) {
+                const isSent = message.senderId === currentUserId;
+                const msgDiv = document.createElement("div");
+                msgDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+                
+                const contentDiv = document.createElement("div");
+                contentDiv.innerText = message.content;
+                
+                const timeDiv = document.createElement("div");
+                timeDiv.className = "message-time";
+                const msgDate = new Date(message.timestamp);
+                timeDiv.innerText = `${msgDate.getHours().toString().padStart(2, '0')}:${msgDate.getMinutes().toString().padStart(2, '0')}`;
+                
+                msgDiv.appendChild(contentDiv);
+                msgDiv.appendChild(timeDiv);
+                
+                chatMessagesEl.appendChild(msgDiv);
+                
+                if (autoScroll) scrollToBottom();
+            }
+
+            function scrollToBottom() {
+                chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+            }
+
+            window.startNewChat = function() {
+                const searchInput = document.getElementById("widgetSearchUserInput");
+                const userId = parseInt(searchInput.value.trim(), 10);
+                
+                if (userId && userId !== currentUserId) {
+                    // Create a dummy contact object to open the chat window
+                    const dummyContact = {
+                        id: userId,
+                        username: "User " + userId
+                    };
+                    selectContact(dummyContact);
+                    searchInput.value = "";
+                } else if (userId === currentUserId) {
+                    alert("You cannot chat with yourself.");
+                }
+            };
+        })();
+    </script>
+}

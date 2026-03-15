@@ -1,4 +1,4 @@
-﻿@inject IHttpContextAccessor HttpContextAccessor
+@inject IHttpContextAccessor HttpContextAccessor
 @{
     var email = HttpContextAccessor.HttpContext.Session.GetString("Email");
     var role = HttpContextAccessor.HttpContext.Session.GetString("Role");
@@ -74,6 +74,9 @@
                             class="material-symbols-outlined text-sm ml-0.5">expand_more</span></button>
                 </div>
                 <div class="flex items-center space-x-2">
+                    <a class="relative" asp-controller="Chat" asp-action="Index">
+                        <span class="material-symbols-outlined text-lg">chat</span>
+                    </a>
                     <span class="material-symbols-outlined text-lg">notifications</span>
                     <a class="relative" href="#">
                         <span class="material-symbols-outlined text-lg">shopping_cart</span>
@@ -112,6 +115,7 @@
     <main class="max-w-[1300px] mx-auto px-4 py-8">
         @RenderBody()
     </main>
+    @await Html.PartialAsync("_ChatWidget")
     <footer class="bg-white border-t border-gray-200 pt-12 pb-8 mt-12">
         <div class="max-w-[1300px] mx-auto px-4">
             <div class="grid grid-cols-5 gap-8 mb-12">
