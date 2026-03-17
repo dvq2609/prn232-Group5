@@ -187,7 +187,7 @@ namespace backend.Controllers
                 var result = await _disputeService.ProcessAdminResponseAsync(id, responseDto, adminId);
                 if (result)
                 {
-                    return Ok(new { message = "Gửi phản hồi cho người bán thành công." });
+                    return Ok(new { message = "Admin đã xử lý khiếu nại thành công." });
                 }
                 return BadRequest("Không thể gửi phản hồi.");
             }

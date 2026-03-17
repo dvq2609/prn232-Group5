@@ -97,12 +97,13 @@ namespace frontEnd.Controllers
             {
                 Console.WriteLine($"Exception during Create Dispute: {ex.Message}");
             }
-            return View();
+            return RedirectToAction("BuyerDisputes", "Dispute");
         }
-        public async Task<IActionResult> AllDisputes(int page = 1, int pageSize = 5, string status = "all")
+        public async Task<IActionResult> AllDisputes(int? id, int page = 1, int pageSize = 5, string status = "all")
         {
             X.PagedList.IPagedList<DisputeResponse> pagedDisputes = null;
             ViewBag.CurrentStatus = status;
+            ViewBag.OpenDisputeId = id;
             try
             {
                 var client = _httpClientFactory.CreateClient();
@@ -161,10 +162,11 @@ namespace frontEnd.Controllers
             pagedDisputes ??= new X.PagedList.StaticPagedList<DisputeResponse>(new List<DisputeResponse>(), page, pageSize, 0);
             return View(pagedDisputes);
         }
-        public async Task<IActionResult> BuyerDisputes(int page = 1, int pageSize = 5, string status = "all")
+        public async Task<IActionResult> BuyerDisputes(int? id, int page = 1, int pageSize = 5, string status = "all")
         {
             X.PagedList.IPagedList<DisputeResponse> pagedDisputes = null;
             ViewBag.CurrentStatus = status;
+            ViewBag.OpenDisputeId = id;
             try
             {
                 var client = _httpClientFactory.CreateClient();
@@ -212,10 +214,11 @@ namespace frontEnd.Controllers
             pagedDisputes ??= new X.PagedList.StaticPagedList<DisputeResponse>(new List<DisputeResponse>(), page, pageSize, 0);
             return View(pagedDisputes);
         }
-        public async Task<IActionResult> SellerDisputes(int page = 1, int pageSize = 5, string status = "all")
+        public async Task<IActionResult> SellerDisputes(int? id, int page = 1, int pageSize = 5, string status = "all")
         {
             X.PagedList.IPagedList<DisputeResponse> pagedDisputes = null;
             ViewBag.CurrentStatus = status;
+            ViewBag.OpenDisputeId = id;
             try
             {
                 var client = _httpClientFactory.CreateClient();

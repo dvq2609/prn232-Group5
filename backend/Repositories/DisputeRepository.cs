@@ -3,23 +3,25 @@ using backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Sieve.Models;
 using Sieve.Services;
-
+using backend.Services.Notification;
 namespace backend.Repositories
 {
     public class DisputeRepository : IDisputeRepository
     {
         private readonly CloneEbayDbContext _context;
         private readonly ISieveProcessor _sieveProcessor;
-
-        public DisputeRepository(CloneEbayDbContext context, ISieveProcessor sieveProcessor)
+        private readonly INotificationService _notificationService;
+        public DisputeRepository(CloneEbayDbContext context, ISieveProcessor sieveProcessor, INotificationService notificationService)
         {
             _context = context;
             _sieveProcessor = sieveProcessor;
+            _notificationService = notificationService;
         }
 
         public async Task<Dispute> AddDispute(DisputeCreateDto disputeDto, int currentUserId)
         {
             var order = await _context.OrderTables.FindAsync(disputeDto.OrderId);
+
             if (order == null)
             {
                 throw new Exception("Order not found");
@@ -47,12 +49,36 @@ namespace backend.Repositories
 
             await _context.Disputes.AddAsync(newDispute);
             await _context.SaveChangesAsync();
+            var sellerId = await GetSellerIdByOrderId(disputeDto.OrderId);
+            if (sellerId > 0)
+            {
+                await _notificationService.SendNotificationAsync(
+                 sellerId,
+                 $"Bạn có khiếu nại mới cho đơn hàng #{disputeDto.OrderId}",
+                 $"/Dispute/SellerDisputes/{newDispute.Id}"
+            );
+            }
             return newDispute;
         }
 
         public Task DeleteDispute(int id)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<int> GetSellerIdByOrderId(int orderId)
+        {
+            var order = await _context.OrderTables
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Product)
+                .Where(o => o.Id == orderId)
+                .FirstOrDefaultAsync();
+            if (order == null)
+            {
+                throw new Exception("Order not found");
+            }
+            var sellerId = order.OrderItems.Select(oi => oi.Product.SellerId).FirstOrDefault();
+            return sellerId ?? throw new Exception("Seller not found");
         }
 
         public async Task<PagedResult<DisputeDto>> GetAllDisputes(SieveModel sieveModel)

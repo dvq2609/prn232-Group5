@@ -1,12 +1,13 @@
 using backend.Models;
 using Microsoft.EntityFrameworkCore;
-
+using backend.Services.Notification;
 namespace backend.Services
 {
     public class AutoEscalateDisputeService : BackgroundService
     {
         private readonly ILogger<AutoEscalateDisputeService> _logger;
         private readonly IServiceScopeFactory _scopeFactory;
+
 
         // Trong môi trường DEV: Chạy mỗi 1 phút để test
         private readonly TimeSpan _checkInterval = TimeSpan.FromMinutes(1);
@@ -49,6 +50,7 @@ namespace backend.Services
             {
                 //lấy context
                 var context = scope.ServiceProvider.GetRequiredService<CloneEbayDbContext>();
+                var notificationService = scope.ServiceProvider.GetRequiredService<INotificationService>();
 
                 var deadline = DateTime.Now.Subtract(_expireTime);
 
@@ -70,6 +72,13 @@ namespace backend.Services
                         dispute.Comment = string.IsNullOrEmpty(dispute.Comment) ? autoComment : dispute.Comment + "\n" + autoComment;
 
                         _logger.LogInformation($"Auto-escalated Dispute ID: {dispute.Id} from User: {dispute.RaisedBy}");
+
+                        await notificationService.SendNotificationAsync(
+                            1, // admin id
+                            $"Khiếu nại #{dispute.Id} đã được tự động đẩy lên Admin phân xử",
+                            $"/Dispute/AllDisputes/{dispute.Id}"
+                        );
+
                     }
 
                     await context.SaveChangesAsync();
@@ -77,5 +86,6 @@ namespace backend.Services
                 }
             }
         }
+
     }
 }

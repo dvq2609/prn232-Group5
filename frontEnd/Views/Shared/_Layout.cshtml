@@ -77,7 +77,35 @@
                     <a class="relative" asp-controller="Chat" asp-action="Index">
                         <span class="material-symbols-outlined text-lg">chat</span>
                     </a>
-                    <span class="material-symbols-outlined text-lg">notifications</span>
+                    @if (!string.IsNullOrEmpty(email))
+                    {
+                        <!-- Notification Bell -->
+                        <div class="relative" id="notification-wrapper">
+                            <button id="bell-btn" class="relative flex items-center focus:outline-none">
+                                <span class="material-symbols-outlined text-lg">notifications</span>
+                                <span id="unread-badge"
+                                    class="hidden absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[9px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-0.5 shadow-sm">0</span>
+                            </button>
+                            <!-- Dropdown -->
+                            <div id="notification-dropdown"
+                                class="hidden absolute right-0 top-10 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-[100]">
+                                <div
+                                    class="flex justify-between items-center px-4 py-3 border-b border-gray-100 bg-gray-50 rounded-t-lg">
+                                    <span class="text-xs font-bold text-gray-700">Thông báo</span>
+                                    <button onclick="markAllAsRead()"
+                                        class="text-[10px] text-blue-600 hover:text-blue-800 font-medium">Đánh dấu tất cả đã
+                                        đọc</button>
+                                </div>
+                                <div id="notification-list" class="max-h-96 overflow-y-auto divide-y divide-gray-50">
+                                    <div class="p-8 text-center text-gray-400 text-xs italic">Đang tải...</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="material-symbols-outlined text-lg">notifications</span>
+                    }
                     <a class="relative" href="#">
                         <span class="material-symbols-outlined text-lg">shopping_cart</span>
                     </a>
@@ -197,6 +225,144 @@
         </div>
     </footer>
 
+    @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const bellBtn = document.getElementById('bell-btn');
+            const dropdown = document.getElementById('notification-dropdown');
+            const unreadBadge = document.getElementById('unread-badge');
+            const notificationList = document.getElementById('notification-list');
+            const wrapper = document.getElementById('notification-wrapper');
+
+            if (!bellBtn) return;
+
+            // Update unread count immediately and then every 30s
+            updateUnreadCount();
+            setInterval(updateUnreadCount, 30000);
+
+            // Toggle dropdown
+            bellBtn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                dropdown.classList.toggle('hidden');
+                if (!dropdown.classList.contains('hidden')) {
+                    fetchNotifications();
+                }
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function (e) {
+                if (wrapper && !wrapper.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+
+            async function updateUnreadCount() {
+                try {
+                    const response = await fetch('/Notification/UnreadCount');
+                    if (response.ok) {
+                        const count = await response.json();
+                        if (count > 0) {
+                            unreadBadge.textContent = count > 99 ? '99+' : count;
+                            unreadBadge.classList.remove('hidden');
+                        } else {
+                            unreadBadge.classList.add('hidden');
+                        }
+                    }
+                } catch (err) {
+                    console.error('Failed to fetch unread count:', err);
+                }
+            }
+
+            async function fetchNotifications() {
+                try {
+                    notificationList.innerHTML = '<div class="p-8 text-center text-gray-400 text-xs italic animate-pulse">Đang tải...</div>';
+                    const response = await fetch('/Notification/GetNotifications');
+                    if (response.ok) {
+                        const notifications = await response.json();
+                        renderNotifications(notifications);
+                    } else {
+                        notificationList.innerHTML = '<div class="p-8 text-center text-red-400 text-xs">Không thể tải thông báo.</div>';
+                    }
+                } catch (err) {
+                    notificationList.innerHTML = '<div class="p-8 text-center text-red-500 text-xs">Lỗi hệ thống.</div>';
+                }
+            }
+
+            function renderNotifications(notifications) {
+                if (!notifications || notifications.length === 0) {
+                    notificationList.innerHTML = '<div class="p-10 text-center text-gray-400 text-xs">Bạn chưa có thông báo nào.</div>';
+                    return;
+                }
+
+                notificationList.innerHTML = notifications.map(noti => {
+                    const isUnread = !noti.isRead;
+                    const dateStr = noti.createdAt || noti.CreatedAt;
+                    const redirectLink = noti.redirectUrl || noti.RedirectUrl || '#';
+                    const date = new Date(dateStr).toLocaleString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        day: '2-digit',
+                        month: '2-digit'
+                    });
+
+                    return `
+                        <div onclick="handleNotificationClick(${noti.id}, '${redirectLink}')" 
+                             class="p-4 hover:bg-blue-50 cursor-pointer transition-colors relative ${isUnread ? 'bg-blue-50/30' : ''}">
+                            <div class="flex justify-between items-start gap-3">
+                                <div class="flex-grow">
+                                    <p class="text-[13px] ${isUnread ? 'font-semibold text-gray-900' : 'text-gray-600'} leading-tight">
+                                        ${noti.message}
+                                    </p>
+                                    <span class="text-[10px] text-gray-400 mt-1 block">${date}</span>
+                                </div>
+                                ${isUnread ? '<div class="w-2 h-2 bg-blue-500 rounded-full mt-1.5 flex-shrink-0"></div>' : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        });
+
+        async function handleNotificationClick(id, link) {
+            try {
+                await fetch(`/Notification/MarkAsRead?id=${id}`, { method: 'PUT' });
+                if (link && link !== '#') {
+                    window.location.href = link;
+                } else {
+                    location.reload();
+                }
+            } catch (err) {
+                console.error('Failed to mark as read:', err);
+                if (link && link !== '#') window.location.href = link;
+            }
+        }
+
+        async function markAllAsRead() {
+            try {
+                const response = await fetch('/Notification/MarkAllAsRead', { method: 'PUT' });
+                if (response.ok) {
+                    const badge = document.getElementById('unread-badge');
+                    if (badge) badge.classList.add('hidden');
+
+                    // Update current list UI
+                    const items = document.querySelectorAll('#notification-list > div');
+                    items.forEach(item => {
+                        item.classList.remove('bg-blue-50/30');
+                        const dot = item.querySelector('.bg-blue-500');
+                        if (dot) dot.remove();
+                        const p = item.querySelector('p');
+                        if (p) {
+                            p.classList.remove('font-semibold', 'text-gray-900');
+                            p.classList.add('text-gray-600');
+                        }
+                    });
+                }
+            } catch (err) {
+                console.error('Failed to mark all as read:', err);
+            }
+        }
+    </script>
 </body>
 
 </html>

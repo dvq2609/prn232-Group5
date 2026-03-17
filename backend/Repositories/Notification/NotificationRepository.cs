@@ -23,7 +23,7 @@ namespace backend.Repositories.Notification
                 Message = notification.Message,
                 RedirectUrl = notification.RedirectUrl,
                 IsRead = notification.IsRead,
-                CreatedAt = notification.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                CreatedAt = notification.CreatedAt
             };
         }
 
@@ -54,7 +54,7 @@ namespace backend.Repositories.Notification
                     Message = n.Message,
                     RedirectUrl = n.RedirectUrl,
                     IsRead = n.IsRead,
-                    CreatedAt = n.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                    CreatedAt = n.CreatedAt
                 })
                 .ToListAsync();
         }
@@ -69,7 +69,7 @@ namespace backend.Repositories.Notification
                     Message = n.Message,
                     RedirectUrl = n.RedirectUrl,
                     IsRead = n.IsRead,
-                    CreatedAt = n.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                    CreatedAt = n.CreatedAt
                 })
                 .FirstOrDefaultAsync();
         }
