@@ -265,6 +265,32 @@
             var currentStatus = '@ViewBag.CurrentStatus';
             var sel = document.getElementById('statusFilter');
             if (sel && currentStatus) { sel.value = currentStatus; }
+
+            // Auto-open modal if disputeId is provided
+            var openDisputeId = '@ViewBag.OpenDisputeId';
+            console.log("Auto-open check - ViewBag.OpenDisputeId:", openDisputeId);
+
+            if (openDisputeId && !isNaN(openDisputeId) && parseInt(openDisputeId) > 0) {
+                console.log("Auto-opening modal for ID:", openDisputeId);
+                openDisputeModal(openDisputeId);
+            } else {
+                // Fallback: check URL path or query string
+                const urlParams = new URLSearchParams(window.location.search);
+                const disputeId = urlParams.get('disputeId');
+                console.log("Auto-open check - Query disputeId:", disputeId);
+
+                if (disputeId) {
+                    openDisputeModal(disputeId);
+                } else {
+                    const pathParts = window.location.pathname.split('/');
+                    const lastPart = pathParts[pathParts.length - 1];
+                    console.log("Auto-open check - Path lastPart:", lastPart);
+
+                    if (!isNaN(lastPart) && lastPart !== "" && pathParts.length > 2) {
+                        openDisputeModal(parseInt(lastPart));
+                    }
+                }
+            }
         });
 
         function filterDisputes() {

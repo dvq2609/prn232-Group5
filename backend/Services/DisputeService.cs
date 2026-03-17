@@ -1,7 +1,9 @@
 ﻿using backend.DTOs;
 using backend.Models;
 using backend.Repositories;
+using backend.Services.Notification;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Sieve.Models;
 
 namespace backend.Services
@@ -9,9 +11,13 @@ namespace backend.Services
     public class DisputeService : IDisputeService
     {
         private readonly IDisputeRepository _disputeRepository;
-        public DisputeService(IDisputeRepository disputeRepository)
+        private readonly INotificationService _notificationService;
+        private readonly CloneEbayDbContext _context;
+        public DisputeService(IDisputeRepository disputeRepository, INotificationService notificationService, CloneEbayDbContext context)
         {
             _disputeRepository = disputeRepository;
+            _notificationService = notificationService;
+            _context = context;
         }
         public async Task<Dispute> AddDispute(DisputeCreateDto dispute, int currentUserId)
         {
@@ -82,7 +88,9 @@ namespace backend.Services
 
             dispute.SellerResponse = responseDto.Message;
 
+
             await _disputeRepository.UpdateDispute(dispute);
+            await _notificationService.SendNotificationAsync(dispute.RaisedBy ?? 0, $"Người bán đã phản hồi khiếu nại #{disputeId} của bạn", $"/Dispute/BuyerDisputes/{disputeId}");
             return true;
         }
         public async Task<bool> ProcessBuyerResponseAsync(int disputeId, DisputeBuyerResponseDto responseDto, int buyerId)
@@ -115,6 +123,8 @@ namespace backend.Services
             dispute.BuyerResponse = responseDto.Message;
 
             await _disputeRepository.UpdateDispute(dispute);
+            var sellerId = await GetSellerIdByDisputeId(disputeId);
+            await _notificationService.SendNotificationAsync(sellerId, $"Người mua đã phản hồi khiếu nại #{disputeId} của bạn", $"/Dispute/SellerDisputes/{disputeId}");
             return true;
         }
         public async Task<bool> ProcessAdminResponseAsync(int disputeId, DisputeAdminResponseDto responseDto, int adminId)
@@ -143,7 +153,24 @@ namespace backend.Services
             dispute.SolvedDate = DateTime.Now;
 
             await _disputeRepository.UpdateDispute(dispute);
+            var sellerId = await GetSellerIdByDisputeId(disputeId);
+            await _notificationService.SendNotificationAsync(sellerId, $"Khiếu nại #{disputeId} đã được Admin xử lý", $"/Dispute/SellerDisputes/{disputeId}");
+            await _notificationService.SendNotificationAsync(dispute.RaisedBy ?? 0, $"Khiếu nại #{disputeId} đã được Admin xử lý", $"/Dispute/BuyerDisputes/{disputeId}");
             return true;
+        }
+        public async Task<int> GetSellerIdByDisputeId(int disputeId)
+        {
+            var dispute = await _context.Disputes.Include(d => d.Order).ThenInclude(o => o.OrderItems).ThenInclude(oi => oi.Product).Where(d => d.Id == disputeId).FirstOrDefaultAsync();
+            if (dispute == null) throw new Exception("Dispute not found");
+            var sellerId = dispute.Order.OrderItems.Select(oi => oi.Product.SellerId).FirstOrDefault();
+            return sellerId ?? throw new Exception("Seller not found");
+        }
+        public async Task<int> GetBuyerIdByDisputeId(int disputeId)
+        {
+            var dispute = await _context.Disputes.Include(d => d.Order).Where(d => d.Id == disputeId).FirstOrDefaultAsync();
+            if (dispute == null) throw new Exception("Dispute not found");
+            var buyerId = dispute.Order.BuyerId;
+            return buyerId ?? throw new Exception("Buyer not found");
         }
     }
 }

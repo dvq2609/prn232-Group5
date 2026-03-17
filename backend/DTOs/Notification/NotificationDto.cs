@@ -8,6 +8,6 @@ namespace backend.DTOs.Notification
         public string Message { get; set; } = null!;
         public string? RedirectUrl { get; set; }
         public bool IsRead { get; set; }
-        public string CreatedAt { get; set; } = null!;
+        public DateTime CreatedAt { get; set; }
     }
 }
