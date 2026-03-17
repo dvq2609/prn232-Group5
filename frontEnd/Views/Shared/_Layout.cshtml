@@ -74,8 +74,9 @@
                             class="material-symbols-outlined text-sm ml-0.5">expand_more</span></button>
                 </div>
                 <div class="flex items-center space-x-2">
-                    <a class="relative" asp-controller="Chat" asp-action="Index">
-                        <span class="material-symbols-outlined text-lg">chat</span>
+                    <a class="relative flex items-center hover:underline" asp-controller="Chat" asp-action="Index">
+                        <span class="material-symbols-outlined text-lg mr-1">chat</span>
+                        <span>Messages</span>
                     </a>
                     @if (!string.IsNullOrEmpty(email))
                     {

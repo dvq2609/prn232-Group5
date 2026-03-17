@@ -23,7 +23,7 @@
                     </button>
                 </div>
                 <div style="padding: 10px; border-bottom: 1px solid #eaeaea; display: flex; gap: 8px;">
-                    <input type="text" id="widgetSearchUserInput" placeholder="Search user ID to chat..." style="flex: 1; padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem;" />
+                    <input type="text" id="widgetSearchUserInput" placeholder="Search username to chat..." style="flex: 1; padding: 6px 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem;" />
                     <button onclick="startNewChat()" style="background: #007bff; color: white; border: none; border-radius: 4px; padding: 0 10px; cursor: pointer;">
                         Chat
                     </button>
@@ -174,7 +174,7 @@
                     contactListEl.innerHTML = `<div style="padding: 30px 20px; text-align: center; color: #888;">
                         <span class="material-symbols-outlined" style="font-size: 40px; color: #ccc; margin-bottom: 10px;">chat_bubble_outline</span><br>
                         No active conversations yet.<br>
-                        <span style="font-size: 0.8rem;">Use the search bar above to enter a User ID and start chatting.</span>
+                        <span style="font-size: 0.8rem;">Use the search bar above to enter a Username and start chatting.</span>
                     </div>`;
                     return;
                 }
@@ -244,20 +244,32 @@
                 chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
             }
 
-            window.startNewChat = function() {
+            window.startNewChat = async function() {
                 const searchInput = document.getElementById("widgetSearchUserInput");
-                const userId = parseInt(searchInput.value.trim(), 10);
+                const username = searchInput.value.trim();
                 
-                if (userId && userId !== currentUserId) {
-                    // Create a dummy contact object to open the chat window
-                    const dummyContact = {
-                        id: userId,
-                        username: "User " + userId
-                    };
-                    selectContact(dummyContact);
-                    searchInput.value = "";
-                } else if (userId === currentUserId) {
-                    alert("You cannot chat with yourself.");
+                if (username) {
+                    try {
+                        const res = await fetch(`${backendUrl}/api/auth/user/${encodeURIComponent(username)}`, {
+                            headers: { "Authorization": `Bearer ${token}` }
+                        });
+                        if (res.ok) {
+                            const user = await res.json();
+                            if (user.id === currentUserId) {
+                                alert("You cannot chat with yourself.");
+                            } else {
+                                selectContact(user);
+                                searchInput.value = "";
+                            }
+                        } else if (res.status === 404) {
+                            alert("User not found.");
+                        } else {
+                            alert("An error occurred. Please try again.");
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        alert("An error occurred. Please try again.");
+                    }
                 }
             };
 
