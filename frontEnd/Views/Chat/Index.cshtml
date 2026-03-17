@@ -96,8 +96,8 @@
     const currentUserId = parseInt('@ViewBag.CurrentUserId', 10);
     const backendUrl = "https://localhost:7290";
     
-    let activeContactId = null;
-    let connection = new signalR.HubConnectionBuilder()
+    let activePageContactId = null;
+    let pageConnection = new signalR.HubConnectionBuilder()
         .withUrl(`${backendUrl}/chathub`, {
             accessTokenFactory: () => token,
             skipNegotiation: true, // For WebSockets
@@ -107,22 +107,22 @@
         .build();
 
     // Start Connection
-    connection.start().then(() => {
+    pageConnection.start().then(() => {
         console.log("Connected to ChatHub via Page");
-        loadContacts();
+        loadPageContacts();
     }).catch(err => console.error("SignalR Connection Error: ", err.toString()));
 
-    connection.on("ReceiveMessage", (message) => {
-        loadContacts(); 
-        if (message.senderId === activeContactId || message.receiverId === activeContactId) {
-            appendMessage(message);
+    pageConnection.on("ReceiveMessage", (message) => {
+        loadPageContacts(); 
+        if (message.senderId === activePageContactId || message.receiverId === activePageContactId) {
+            appendPageMessage(message);
         }
     });
 
-    connection.on("MessageSent", (message) => {
-        loadContacts();
-        if (message.receiverId === activeContactId) {
-            appendMessage(message);
+    pageConnection.on("MessageSent", (message) => {
+        loadPageContacts();
+        if (message.receiverId === activePageContactId) {
+            appendPageMessage(message);
         }
     });
 
@@ -142,39 +142,39 @@
     msgInput.addEventListener("keypress", function(e) {
         if (e.key === "Enter" && !e.shiftKey) {
             e.preventDefault();
-            sendMessage();
+            sendPageMessage();
         }
     });
 
-    sendBtn.addEventListener("click", sendMessage);
+    sendBtn.addEventListener("click", sendPageMessage);
 
-    function sendMessage() {
-        if (!activeContactId) return;
+    function sendPageMessage() {
+        if (!activePageContactId) return;
         const content = msgInput.value.trim();
         if (content === "") return;
 
-        connection.invoke("SendMessage", activeContactId, content).catch(console.error);
+        pageConnection.invoke("SendMessage", activePageContactId, content).catch(console.error);
         msgInput.value = "";
         
         sendBtn.classList.remove("active");
         sendBtn.disabled = true;
     }
 
-    async function loadContacts() {
+    async function loadPageContacts() {
         try {
             const response = await fetch(`${backendUrl}/api/message/contacts`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             if (response.ok) {
                 const contacts = await response.json();
-                renderContacts(contacts);
+                renderPageContacts(contacts);
             }
         } catch (error) {
             console.error(error);
         }
     }
 
-    function renderContacts(contacts) {
+    function renderPageContacts(contacts) {
         const list = document.getElementById("pageContactList");
         list.innerHTML = "";
         
@@ -185,8 +185,8 @@
         
         contacts.forEach(contact => {
             const item = document.createElement("div");
-            item.className = `cp-convo-item ${contact.id === activeContactId ? 'active' : ''}`;
-            item.onclick = () => selectContact(contact, item);
+            item.className = `cp-convo-item ${contact.id === activePageContactId ? 'active' : ''}`;
+            item.onclick = () => selectPageContact(contact, item);
             
             const avatarTxt = contact.username ? contact.username.charAt(0).toUpperCase() : 'U';
             let lastMsgTxt = contact.lastMessage ? contact.lastMessage.content : "No messages yet";
@@ -213,8 +213,8 @@
         });
     }
 
-    async function selectContact(contact, element = null) {
-        activeContactId = contact.id;
+    async function selectPageContact(contact, element = null) {
+        activePageContactId = contact.id;
         
         document.getElementById("pageNoChatSelected").style.display = "none";
         document.getElementById("pageChatArea").style.display = "flex";
@@ -227,7 +227,7 @@
         if (element) {
             element.classList.add('active');
         } else {
-            loadContacts(); // Refresh list to highlight
+            loadPageContacts(); // Refresh list to highlight
         }
         
         // Fetch history
@@ -237,25 +237,25 @@
             });
             if (response.ok) {
                 const messages = await response.json();
-                renderMessages(messages);
+                renderPageMessages(messages);
             }
         } catch (error) {
             console.error(error);
         }
     }
 
-    function renderMessages(messages) {
+    function renderPageMessages(messages) {
         const chatMessages = document.getElementById("pageChatMessages");
         chatMessages.innerHTML = "";
         
         messages.forEach(msg => {
-            appendMessage(msg, false);
+            appendPageMessage(msg, false);
         });
         
-        scrollToBottom();
+        scrollPageToBottom();
     }
 
-    function appendMessage(message, autoScroll = true) {
+    function appendPageMessage(message, autoScroll = true) {
         const isSent = message.senderId === currentUserId;
         const msgWrapper = document.createElement("div");
         msgWrapper.className = `cp-message-wrapper ${isSent ? 'sent' : 'received'}`;
@@ -279,11 +279,11 @@
         document.getElementById("pageChatMessages").appendChild(msgWrapper);
         
         if (autoScroll) {
-            scrollToBottom();
+            scrollPageToBottom();
         }
     }
 
-    function scrollToBottom() {
+    function scrollPageToBottom() {
         const chatMessages = document.getElementById("pageChatMessages");
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
@@ -297,7 +297,7 @@
                 id: userId,
                 username: "User " + userId
             };
-            selectContact(dummyContact);
+            selectPageContact(dummyContact);
             searchInput.value = "";
         } else if (userId === currentUserId) {
             alert("You cannot chat with yourself.");

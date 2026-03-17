@@ -260,6 +260,26 @@
                     alert("You cannot chat with yourself.");
                 }
             };
+
+            window.openChatWithUser = function(userId, username) {
+                if (!userId) return;
+                if (userId === currentUserId) {
+                    alert("You cannot chat with yourself.");
+                    return;
+                }
+                
+                const dummyContact = {
+                    id: userId,
+                    username: username || ("User " + userId)
+                };
+                
+                // Open the chat window if it's currently closed
+                if (!isWindowOpen) {
+                    toggleChatWindow();
+                }
+                
+                selectContact(dummyContact);
+            };
         })();
     </script>
 }
