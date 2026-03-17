@@ -15,8 +15,6 @@ using backend.Services.SellerReview;
 using backend.Repositories.Message;
 using backend.Services.Message;
 using backend.Hubs;
-using backend.Repositories.Notification;
-using backend.Services.Notification;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -52,9 +50,6 @@ builder.Services.AddScoped<ISellerReviewService, SellerReviewService>();
 
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
-
-builder.Services.AddScoped<INotifcationRepository, NotificationRepository>();
-builder.Services.AddScoped<INotificationService, NotificationService>();
 
 builder.Services.AddSignalR();
 

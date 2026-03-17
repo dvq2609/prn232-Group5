@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -52,8 +52,6 @@ public partial class CloneEbayDbContext : DbContext
     public virtual DbSet<ShippingInfo> ShippingInfos { get; set; }
 
     public virtual DbSet<Store> Stores { get; set; }
-
-    public virtual DbSet<Notification> Notifications { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
 
@@ -586,18 +584,6 @@ public partial class CloneEbayDbContext : DbContext
             entity.Property(e => e.Username)
                 .HasMaxLength(100)
                 .HasColumnName("username");
-        });
-
-        modelBuilder.Entity<Notification>(entity =>
-        {
-            entity.HasKey(e => e.Id).HasName("PK_Notification");
-            entity.ToTable("Notification");
-            entity.Property(e => e.CreatedAt).HasColumnType("datetime").HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.Message).IsRequired();
-            entity.Property(e => e.UserId).IsRequired();
-            entity.HasOne(d => d.User).WithMany(p => p.Notifications)
-                .HasForeignKey(d => d.UserId)
-                .HasConstraintName("FK_Notification_User");
         });
 
         OnModelCreatingPartial(modelBuilder);
