@@ -77,5 +77,17 @@ namespace backend.Controllers
             return tokenHandler.WriteToken(token);
         }
 
+        [HttpGet("user/{username}")]
+        public async Task<IActionResult> GetUserByUsername(string username)
+        {
+            var users = await _accountService.GetAllUsers();
+            var user = users.FirstOrDefault(u => u.Username != null && u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+            if (user == null)
+            {
+                return NotFound();
+            }
+            return Ok(new { id = user.Id, username = user.Username });
+        }
+
     }
 }
