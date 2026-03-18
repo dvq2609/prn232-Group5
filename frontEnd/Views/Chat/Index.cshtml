@@ -32,7 +32,7 @@
         <div class="cp-search-area">
             <div class="cp-search-box">
                 <span class="material-symbols-outlined">search</span>
-                <input type="text" id="pageSearchUserInput" placeholder="Search User ID to chat..." />
+                <input type="text" id="pageSearchUserInput" placeholder="Search Username to chat..." />
                 <button onclick="startNewPageChat()" style="position:absolute; right:10px; top:5px; background: #3665f3; color: white; border: none; border-radius: 15px; padding: 5px 15px; cursor: pointer; font-size: 0.8rem;">Chat</button>
             </div>
         </div>
@@ -288,19 +288,32 @@
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
-    window.startNewPageChat = function() {
+    window.startNewPageChat = async function() {
         const searchInput = document.getElementById("pageSearchUserInput");
-        const userId = parseInt(searchInput.value.trim(), 10);
+        const username = searchInput.value.trim();
         
-        if (userId && userId !== currentUserId) {
-            const dummyContact = {
-                id: userId,
-                username: "User " + userId
-            };
-            selectPageContact(dummyContact);
-            searchInput.value = "";
-        } else if (userId === currentUserId) {
-            alert("You cannot chat with yourself.");
+        if (username) {
+            try {
+                const res = await fetch(`${backendUrl}/api/auth/user/${encodeURIComponent(username)}`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (res.ok) {
+                    const user = await res.json();
+                    if (user.id === currentUserId) {
+                        alert("You cannot chat with yourself.");
+                    } else {
+                        selectPageContact(user);
+                        searchInput.value = "";
+                    }
+                } else if (res.status === 404) {
+                    alert("User not found.");
+                } else {
+                    alert("An error occurred. Please try again.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("An error occurred. Please try again.");
+            }
         }
     };
 </script>
