@@ -68,9 +68,6 @@ ScaffoldingReadMe.txt
 .env
 *.env
 appsettings.Production.json
-backend/appsettings.json
-backend/appsettings.json
 .brain/session_log.txt
 backend/build_errors.txt
 *.png
-backend/appsettings.json
