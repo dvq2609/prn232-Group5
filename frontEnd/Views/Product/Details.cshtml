@@ -1,4 +1,4 @@
-@using frontEnd.Models;
+﻿@using frontEnd.Models;
 @model ProductViewModel;
 @{
     ViewData["Title"] = "Product Details";
@@ -151,42 +151,24 @@
                             <span class="text-sm text-slate-500 dark:text-slate-400">@Model.ReviewCount ratings</span>
                         </div>
                     </div>
+                    @{
+                        var totalRatings = Model.ReviewCount > 0 ? Model.ReviewCount : (Model.Reviews?.Count ?? 0);
+                        var ratingCounts = Model.RatingCounts ?? new Dictionary<int, int>();
+                    }
                     <div class="space-y-3">
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-medium w-12 text-slate-600 dark:text-slate-400">5 star</span>
-                            <div class="flex-grow bg-slate-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
-                                <div class="bg-primary h-full w-[70%]"></div>
+                        @for (int star = 5; star >= 1; star--)
+                        {
+                            var count = ratingCounts.TryGetValue(star, out var c) ? c : 0;
+                            var percent = totalRatings > 0 ? (count * 100.0 / totalRatings) : 0;
+
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm font-medium w-12 text-slate-600 dark:text-slate-400">@star star</span>
+                                <div class="flex-grow bg-slate-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
+                                    <div class="bg-primary h-full" style="width:@percent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></div>
+                                </div>
+                                <span class="text-sm text-slate-500 dark:text-slate-400 w-8 text-right">@count</span>
                             </div>
-                            <span class="text-sm text-slate-500 dark:text-slate-400 w-8 text-right">1</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-medium w-12 text-slate-600 dark:text-slate-400">4 star</span>
-                            <div class="flex-grow bg-slate-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
-                                <div class="bg-primary h-full w-[18%]"></div>
-                            </div>
-                            <span class="text-sm text-slate-500 dark:text-slate-400 w-8 text-right">24</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-medium w-12 text-slate-600 dark:text-slate-400">3 star</span>
-                            <div class="flex-grow bg-slate-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
-                                <div class="bg-primary h-full w-[6%]"></div>
-                            </div>
-                            <span class="text-sm text-slate-500 dark:text-slate-400 w-8 text-right">8</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-medium w-12 text-slate-600 dark:text-slate-400">2 star</span>
-                            <div class="flex-grow bg-slate-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
-                                <div class="bg-primary h-full w-[2%]"></div>
-                            </div>
-                            <span class="text-sm text-slate-500 dark:text-slate-400 w-8 text-right">3</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-sm font-medium w-12 text-slate-600 dark:text-slate-400">1 star</span>
-                            <div class="flex-grow bg-slate-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
-                                <div class="bg-primary h-full w-[1%]"></div>
-                            </div>
-                            <span class="text-sm text-slate-500 dark:text-slate-400 w-8 text-right">1</span>
-                        </div>
+                        }
                     </div>
                     <div class="pt-4">
                         <button
@@ -203,8 +185,8 @@
                         </h3>
                        
                     </div>
-                    <div class="divide-y divide-slate-100 dark:divide-zinc-800">
-                       @foreach(var review in Model.Reviews)
+                          <div class="divide-y divide-slate-100 dark:divide-zinc-800">
+                              @foreach(var review in Model.Reviews ?? new List<ReviewViewImage>())
                         {
                             <div class="py-8 first:pt-0">
                                 <div class="flex items-center justify-between mb-3">
@@ -245,4 +227,4 @@
         </div>
     </div>
 </main>
-
+

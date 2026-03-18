@@ -23,101 +23,197 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <!-- Average Rating -->
-        <div class="border border-gray-200 rounded-lg p-4 text-center">
-            <p class="text-3xl font-bold text-gray-800">@Model.AverageRating.ToString("0.0")</p>
-            <div class="flex justify-center gap-0.5 my-2">
-                @for (int i = 1; i <= 5; i++)
-                {
-                    <span class="text-lg @(i <= (int)Math.Round(Model.AverageRating) ? "text-yellow-400" : "text-gray-300")">★</span>
-                }
-            </div>
-            <p class="text-xs text-gray-500">Average Rating</p>
-        </div>
-
-        <!-- Positive Rate -->
-        <div class="border border-gray-200 rounded-lg p-4 text-center">
-            <p class="text-3xl font-bold text-green-600">@Model.PositiveFeedbackPercent%</p>
-            <p class="text-xs text-gray-500 mt-2">Positive Feedback</p>
-            <p class="text-xs text-gray-400">(@Model.TotalFeedbacks total)</p>
-        </div>
-
-        <!-- Total Feedbacks -->
-        <div class="border border-gray-200 rounded-lg p-4 text-center">
-            <p class="text-3xl font-bold text-gray-800">@Model.TotalFeedbacks</p>
-            <p class="text-xs text-gray-500 mt-2">Total Feedbacks</p>
+    <div class="border-b border-gray-200 mb-6">
+        <div class="flex gap-2">
+            <button id="shopTabBtn" type="button"
+                class="px-4 py-2 text-sm font-semibold rounded-t-md border-b-2 border-blue-600 text-blue-600 bg-blue-50">
+                Shop
+            </button>
+            <button id="feedbackTabBtn" type="button"
+                class="px-4 py-2 text-sm font-semibold rounded-t-md border-b-2 border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50">
+                Feedback
+            </button>
         </div>
     </div>
 
-    <!-- Detailed Seller Ratings -->
-    @if (Model.TotalFeedbacks > 0)
-    {
-        <div class="border border-gray-200 rounded-lg p-6 mb-6">
-            <h2 class="font-bold text-base mb-4">Detailed Seller Ratings</h2>
-            <div class="space-y-4">
-                @{
-                    var criteria = new[] {
-                        ("Item arrived on time", Model.AvgDeliveryOnTime),
-                        ("Item as described", Model.AvgExactSame),
-                        ("Seller communication", Model.AvgCommunication)
-                    };
-                }
-                @foreach (var (label, score) in criteria)
-                {
-                    <div class="flex items-center gap-3">
-                        <span class="text-sm text-gray-700 w-48 flex-shrink-0">@label</span>
-                        <div class="flex-grow bg-gray-200 rounded-full h-2.5">
-                            <div class="bg-blue-600 h-2.5 rounded-full" style="width: @((score / 5.0 * 100).ToString("0"))%"></div>
-                        </div>
-                        <span class="text-sm font-semibold text-gray-700 w-8 text-right">@score.ToString("0.0")</span>
-                    </div>
-                }
-            </div>
-        </div>
-    }
-
-    <!-- Recent Feedbacks -->
-    <div class="border border-gray-200 rounded-lg p-6">
-        <h2 class="font-bold text-base mb-4">Recent Feedback</h2>
-
-        @if (Model.RecentFeedbacks == null || Model.RecentFeedbacks.Count == 0)
+    <div id="shopTabContent">
+        @if (Model.SellerProducts == null || Model.SellerProducts.Count == 0)
         {
-            <p class="text-gray-500 text-sm py-4">No feedback received yet.</p>
+            <div class="border border-gray-200 rounded-lg p-6 text-sm text-gray-500">
+                No products found for this shop.
+            </div>
         }
         else
         {
-            <div class="space-y-4">
-                @foreach (var fb in Model.RecentFeedbacks)
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                @foreach (var product in Model.SellerProducts)
                 {
-                    <div class="border-b border-gray-100 pb-4 last:border-b-0 last:pb-0">
-                        <div class="flex items-start gap-3">
-                            <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                                <span class="text-xs font-bold text-gray-600">
-                                    @(fb.BuyerName?.Substring(0, 1).ToUpper() ?? "?")
-                                </span>
-                            </div>
-                            <div class="flex-grow">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium">@(fb.BuyerName ?? "Anonymous")</span>
-                                    <div class="flex gap-0.5">
-                                        @for (int i = 1; i <= 5; i++)
-                                        {
-                                            <span class="text-xs @(i <= (int)(fb.AverageRating ?? 0) ? "text-yellow-400" : "text-gray-300")">★</span>
-                                        }
-                                    </div>
-                                    <span class="text-xs text-gray-400">@(fb.OrderDate?.ToString("MMM dd, yyyy") ?? "")</span>
-                                </div>
-                                @if (!string.IsNullOrEmpty(fb.Comment))
+                    <div class="border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                        <a href="/Product/Details/@product.Id" class="block mb-3">
+                            <div class="aspect-square bg-gray-50 rounded-md overflow-hidden border border-gray-100">
+                                @if (!string.IsNullOrEmpty(product.Image))
                                 {
-                                    <p class="text-sm text-gray-700 mt-1">@fb.Comment</p>
+                                    <img src="~/@product.Image" alt="@product.Title" class="w-full h-full object-cover" />
                                 }
-                                <p class="text-xs text-gray-400 mt-1">for @(fb.ProductTitle ?? "item")</p>
+                                else
+                                {
+                                    <div class="w-full h-full flex items-center justify-center text-gray-400 text-sm">No image</div>
+                                }
                             </div>
+                        </a>
+                        <a href="/Product/Details/@product.Id" class="text-sm font-semibold text-gray-800 hover:text-blue-600 line-clamp-2">
+                            @product.Title
+                        </a>
+                        <div class="mt-2 flex items-center justify-between">
+                            <span class="text-base font-bold text-gray-900">US @((product.Price ?? 0).ToString("N0"))</span>
+                            <span class="text-xs text-gray-500">@product.AverageRating.ToString("F1") ★ (@product.ReviewCount)</span>
                         </div>
                     </div>
                 }
             </div>
         }
     </div>
+
+    <div id="feedbackTabContent" class="hidden">
+        <!-- Main feedback section: Left Feedback Ratings + Right Detailed Seller Ratings -->
+        @if (Model.TotalFeedbacks > 0)
+        {
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <!-- Left: Feedback Ratings -->
+                <div class="border border-gray-200 rounded-lg p-6">
+                    <h2 class="font-bold text-base mb-4">Feedback Ratings</h2>
+                    <p class="text-xs text-gray-500 mb-4">Last 12 months</p>
+                    
+                    <div class="space-y-3">
+                        <!-- Positive -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-green-600 font-semibold">●</span>
+                                <span class="text-sm text-gray-700">Positive</span>
+                            </div>
+                            <span class="text-sm font-bold text-gray-900">@Model.PositiveCount.ToString("N0")</span>
+                        </div>
+                        
+                        <!-- Neutral -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-gray-400 font-semibold">●</span>
+                                <span class="text-sm text-gray-700">Neutral</span>
+                            </div>
+                            <span class="text-sm font-bold text-gray-900">@Model.NeutralCount.ToString("N0")</span>
+                        </div>
+                        
+                        <!-- Negative -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="text-red-600 font-semibold">●</span>
+                                <span class="text-sm text-gray-700">Negative</span>
+                            </div>
+                            <span class="text-sm font-bold text-gray-900">@Model.NegativeCount.ToString("N0")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Detailed Seller Ratings -->
+                <div class="border border-gray-200 rounded-lg p-6 md:col-span-2">
+                    <h2 class="font-bold text-base mb-4">Detailed Seller Ratings</h2>
+                    <p class="text-xs text-gray-500 mb-4">Average for the last 12 months</p>
+                    
+                    <div class="space-y-4">
+                        @{
+                            var criteria = new[] {
+                                ("Accurate description", Model.AvgExactSame),
+                                ("Shipping speed", Model.AvgDeliveryOnTime),
+                                ("Communication", Model.AvgCommunication)
+                            };
+                        }
+                        @foreach (var (label, score) in criteria)
+                        {
+                            <div class="flex items-center gap-3">
+                                <span class="text-sm text-gray-700 flex-shrink-0" style="width: 180px">@label</span>
+                                <div class="flex-grow bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: @((score / 5.0 * 100).ToString("0"))%"></div>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-700 flex-shrink-0" style="width: 35px; text-align: right;">@score.ToString("0.0")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Recent Feedback Section -->
+        <div class="border border-gray-200 rounded-lg p-6">
+            <h2 class="font-bold text-base mb-4">Recent Feedback (@Model.RecentFeedbacks.Count)</h2>
+
+            @if (Model.RecentFeedbacks == null || Model.RecentFeedbacks.Count == 0)
+            {
+                <p class="text-gray-500 text-sm py-4">No feedback received yet.</p>
+            }
+            else
+            {
+                <div class="space-y-4">
+                    @foreach (var fb in Model.RecentFeedbacks)
+                    {
+                        <div class="border-b border-gray-100 pb-4 last:border-b-0 last:pb-0">
+                            <div class="flex items-start gap-3">
+                                <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
+                                    <span class="text-xs font-bold text-gray-600">
+                                        @(fb.BuyerName?.Substring(0, 1).ToUpper() ?? "?")
+                                    </span>
+                                </div>
+                                <div class="flex-grow">
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-sm font-medium">@(fb.BuyerName ?? "Anonymous")</span>
+                                        <div class="flex gap-0.5">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <span class="text-xs @(i <= (int)(fb.AverageRating ?? 0) ? "text-yellow-400" : "text-gray-300")">★</span>
+                                            }
+                                        </div>
+                                        <span class="text-xs text-gray-400">@(fb.OrderDate?.ToString("MMM dd, yyyy") ?? "")</span>
+                                    </div>
+                                    @if (!string.IsNullOrEmpty(fb.Comment))
+                                    {
+                                        <p class="text-sm text-gray-700 mt-1">@fb.Comment</p>
+                                    }
+                                    <p class="text-xs text-gray-400 mt-1">for @(fb.ProductTitle ?? "item")</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
 </div>
+
+<script>
+    (function () {
+        const shopBtn = document.getElementById('shopTabBtn');
+        const feedbackBtn = document.getElementById('feedbackTabBtn');
+        const shopContent = document.getElementById('shopTabContent');
+        const feedbackContent = document.getElementById('feedbackTabContent');
+
+        function setActiveTab(tab) {
+            const activeBtn = 'px-4 py-2 text-sm font-semibold rounded-t-md border-b-2 border-blue-600 text-blue-600 bg-blue-50';
+            const inactiveBtn = 'px-4 py-2 text-sm font-semibold rounded-t-md border-b-2 border-transparent text-gray-600 hover:text-gray-800 hover:bg-gray-50';
+
+            if (tab === 'shop') {
+                shopBtn.className = activeBtn;
+                feedbackBtn.className = inactiveBtn;
+                shopContent.classList.remove('hidden');
+                feedbackContent.classList.add('hidden');
+            } else {
+                shopBtn.className = inactiveBtn;
+                feedbackBtn.className = activeBtn;
+                shopContent.classList.add('hidden');
+                feedbackContent.classList.remove('hidden');
+            }
+        }
+
+        shopBtn.addEventListener('click', function () { setActiveTab('shop'); });
+        feedbackBtn.addEventListener('click', function () { setActiveTab('feedback'); });
+        setActiveTab('shop');
+    })();
+</script>

@@ -8,6 +8,11 @@ namespace backend.DTOs.Feedback
         public int TotalFeedbacks { get; set; }
         public double AverageRating { get; set; }
 
+        // Feedback counts by rating
+        public int PositiveCount { get; set; }
+        public int NeutralCount { get; set; }
+        public int NegativeCount { get; set; }
+
         // Average detail scores
         public double AvgDeliveryOnTime { get; set; }
         public double AvgExactSame { get; set; }

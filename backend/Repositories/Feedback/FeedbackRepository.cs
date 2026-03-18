@@ -109,7 +109,10 @@ namespace backend.Repositories.Feedback
         {
             return await _context.OrderTables
                 .AnyAsync(o => o.Id == orderId
-                    && (o.Status == "Delivered" || o.Status == "delivered" || o.Status == "Completed"));
+                // && (o.Status == "Delivered" || o.Status == "delivered" || o.Status == "Completed"|| o.Status.ToLower() == "disputed"));
+                && o.Status != null
+                && new[] { "DELIVERED", "COMPLETED","DISPUTED" }
+                    .Contains(o.Status.ToUpper()));
         }
 
         public async Task SetOrderCommented(int orderId)

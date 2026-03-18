@@ -312,23 +312,45 @@ namespace frontEnd.Controllers
         public async Task<IActionResult> SellerProfile(int sellerId)
         {
             var client = _httpClientFactory.CreateClient();
+            var fallback = new SellerFeedbackProfileViewModel
+            {
+                SellerId = sellerId,
+                SellerName = "Unknown Seller"
+            };
+
             try
             {
-                var response = await client.GetAsync($"{ApiBase}/api/feedbacks/seller/{sellerId}/profile");
+                var profileTask = client.GetAsync($"{ApiBase}/api/feedbacks/seller/{sellerId}/profile");
+                var productsTask = client.GetAsync($"{ApiBase}/api/products");
+                await Task.WhenAll(profileTask, productsTask);
+
+                var response = await profileTask;
+                var productsResponse = await productsTask;
+
+                var sellerProducts = new List<ProductViewModel>();
+                if (productsResponse.IsSuccessStatusCode)
+                {
+                    var allProducts = await productsResponse.Content.ReadFromJsonAsync<List<ProductViewModel>>() ?? new();
+                    sellerProducts = allProducts
+                        .Where(p => p.SellerId == sellerId)
+                        .ToList();
+                }
+
                 if (response.IsSuccessStatusCode)
                 {
                     var profile = await response.Content.ReadFromJsonAsync<SellerFeedbackProfileViewModel>();
                     if (profile != null)
+                    {
+                        profile.SellerProducts = sellerProducts;
                         return View(profile);
+                    }
                 }
+
+                fallback.SellerProducts = sellerProducts;
             }
             catch { }
 
-            return View(new SellerFeedbackProfileViewModel
-            {
-                SellerId = sellerId,
-                SellerName = "Unknown Seller"
-            });
+            return View(fallback);
         }
     }
 }

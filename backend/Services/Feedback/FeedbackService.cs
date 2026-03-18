@@ -195,6 +195,11 @@ namespace backend.Services.Feedback
                     ? Math.Round(ratings.Average(), 2)
                     : 0;
 
+                // Calculate feedback counts by rating
+                profile.PositiveCount = ratings.Count(r => r >= 4.0);
+                profile.NeutralCount = ratings.Count(r => r == 3.0);
+                profile.NegativeCount = ratings.Count(r => r < 3.0);
+
                 profile.PositiveFeedbackPercent = ratings.Any()
                     ? Math.Round(ratings.Count(r => r >= 4.0) * 100.0 / ratings.Count, 1)
                     : 0;

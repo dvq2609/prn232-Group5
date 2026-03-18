@@ -50,9 +50,13 @@ namespace frontEnd.Models
         public double PositiveFeedbackPercent { get; set; }
         public int TotalFeedbacks { get; set; }
         public double AverageRating { get; set; }
+        public int PositiveCount { get; set; }
+        public int NeutralCount { get; set; }
+        public int NegativeCount { get; set; }
         public double AvgDeliveryOnTime { get; set; }
         public double AvgExactSame { get; set; }
         public double AvgCommunication { get; set; }
         public List<FeedbackViewModel> RecentFeedbacks { get; set; } = new();
+        public List<ProductViewModel> SellerProducts { get; set; } = new();
     }
 }
