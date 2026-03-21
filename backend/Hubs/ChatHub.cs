@@ -13,9 +13,9 @@ namespace backend.Hubs;
 public class ChatHub : Hub
 {
     private readonly IMessageService _messageService;
-    
+
     // Simple in-memory mapping of user IDs to SignalR connection IDs
-    private static readonly ConcurrentDictionary<string, string> _userConnections = new ConcurrentDictionary<string, string>();
+    public static readonly ConcurrentDictionary<string, string> _userConnections = new ConcurrentDictionary<string, string>();
 
     public ChatHub(IMessageService messageService)
     {
