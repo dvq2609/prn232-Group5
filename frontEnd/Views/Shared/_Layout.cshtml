@@ -363,6 +363,27 @@
                 console.error('Failed to mark all as read:', err);
             }
         }
+
+        window.handleRealtimeNotification = function(notification) {
+            const badge = document.getElementById('unread-badge');
+            if (badge) {
+                let currentCount = parseInt(badge.textContent) || 0;
+                if (badge.classList.contains('hidden')) {
+                    currentCount = 0; // if it was hidden, starting from 0
+                }
+                currentCount++;
+                badge.textContent = currentCount > 99 ? '99+' : currentCount;
+                badge.classList.remove('hidden');
+            }
+
+            const dropdown = document.getElementById('notification-dropdown');
+            if (dropdown && !dropdown.classList.contains('hidden')) {
+                // Tiện nhất là gọi lại hàm fetch để nó tự rải lại HTML mới toanh
+                if (typeof fetchNotifications === 'function') {
+                    fetchNotifications();
+                }
+            }
+        };
     </script>
 </body>
 

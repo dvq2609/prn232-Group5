@@ -122,6 +122,13 @@
                 }
             });
 
+            // Lắng nghe sự kiện chuông thông báo Realtime
+            connection.on("ReceiveNotification", (notification) => {
+                if (typeof window.handleRealtimeNotification === 'function') {
+                    window.handleRealtimeNotification(notification);
+                }
+            });
+
             connection.on("MessageSent", (message) => {
                 loadContacts();
                 if (activeContactId === message.receiverId) {
