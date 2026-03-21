@@ -24,7 +24,7 @@ namespace frontEnd.Controllers
             try
             {
                 var client = _httpClientFactory.CreateClient();
-                var response = await client.GetAsync($"https://localhost:7290/api/orders/buyer/{accountId}");
+                var response = await client.GetAsync($"http://backend:8080/api/orders/buyer/{accountId}");
                 if (response.IsSuccessStatusCode)
                 {
                     var data = await response.Content.ReadFromJsonAsync<List<OrderViewModel>>();
@@ -82,7 +82,7 @@ namespace frontEnd.Controllers
                     }
                 }
 
-                var response = await client.PostAsync("https://localhost:7290/api/disputes", content);
+                var response = await client.PostAsync("http://backend:8080/api/disputes", content);
                 if (response.IsSuccessStatusCode)
                 {
                     return RedirectToAction("BuyerDisputes");
@@ -120,8 +120,8 @@ namespace frontEnd.Controllers
                 }
 
                 var filterParam = (!string.IsNullOrEmpty(status) && status != "all") ? $"&filters=Status=={status}" : "";
-                var response = await client.GetAsync($"https://localhost:7290/api/disputes?page={page}&pageSize={pageSize}&sorts=-DisputeId{filterParam}");
-                var statsResponse = await client.GetAsync($"https://localhost:7290/api/disputes?page=1&pageSize=100000");
+                var response = await client.GetAsync($"http://backend:8080/api/disputes?page={page}&pageSize={pageSize}&sorts=-DisputeId{filterParam}");
+                var statsResponse = await client.GetAsync($"http://backend:8080/api/disputes?page=1&pageSize=100000");
 
                 if (statsResponse.IsSuccessStatusCode)
                 {
@@ -183,8 +183,8 @@ namespace frontEnd.Controllers
                 }
 
                 var filterParam = (!string.IsNullOrEmpty(status) && status != "all") ? $"&filters=Status=={status}" : "";
-                var response = await client.GetAsync($"https://localhost:7290/api/disputes/buyer/{accountId}?page={page}&pageSize={pageSize}&sorts=-DisputeId{filterParam}");
-                var statsResponse = await client.GetAsync($"https://localhost:7290/api/disputes/buyer/{accountId}?page=1&pageSize=100000");
+                var response = await client.GetAsync($"http://backend:8080/api/disputes/buyer/{accountId}?page={page}&pageSize={pageSize}&sorts=-DisputeId{filterParam}");
+                var statsResponse = await client.GetAsync($"http://backend:8080/api/disputes/buyer/{accountId}?page=1&pageSize=100000");
 
                 if (statsResponse.IsSuccessStatusCode)
                 {
@@ -235,8 +235,8 @@ namespace frontEnd.Controllers
                 }
 
                 var filterParam = (!string.IsNullOrEmpty(status) && status != "all") ? $"&filters=Status=={status}" : "";
-                var response = await client.GetAsync($"https://localhost:7290/api/disputes/seller/{accountId}?page={page}&pageSize={pageSize}&sorts=-DisputeId{filterParam}");
-                var statsResponse = await client.GetAsync($"https://localhost:7290/api/disputes/seller/{accountId}?page=1&pageSize=100000");
+                var response = await client.GetAsync($"http://backend:8080/api/disputes/seller/{accountId}?page={page}&pageSize={pageSize}&sorts=-DisputeId{filterParam}");
+                var statsResponse = await client.GetAsync($"http://backend:8080/api/disputes/seller/{accountId}?page=1&pageSize=100000");
 
                 if (statsResponse.IsSuccessStatusCode)
                 {
@@ -283,7 +283,7 @@ namespace frontEnd.Controllers
                 {
                     client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 }
-                var response = await client.GetAsync($"https://localhost:7290/api/disputes/{id}");
+                var response = await client.GetAsync($"http://backend:8080/api/disputes/{id}");
                 if (response.IsSuccessStatusCode)
                 {
                     var data = await response.Content.ReadFromJsonAsync<DisputeResponse>();
@@ -314,7 +314,7 @@ namespace frontEnd.Controllers
                     client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 }
 
-                var response = await client.PostAsJsonAsync($"https://localhost:7290/api/disputes/{id}/seller-response", responseDto);
+                var response = await client.PostAsJsonAsync($"http://backend:8080/api/disputes/{id}/seller-response", responseDto);
                 if (response.IsSuccessStatusCode)
                 {
                     TempData["SuccessMessage"] = "Phản hồi khiếu nại thành công.";
@@ -351,7 +351,7 @@ namespace frontEnd.Controllers
                     client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 }
 
-                var response = await client.PostAsJsonAsync($"https://localhost:7290/api/disputes/{id}/buyer-response", responseDto);
+                var response = await client.PostAsJsonAsync($"http://backend:8080/api/disputes/{id}/buyer-response", responseDto);
                 if (response.IsSuccessStatusCode)
                 {
                     TempData["SuccessMessage"] = "Gửi phản hồi cho người bán thành công.";
@@ -387,7 +387,7 @@ namespace frontEnd.Controllers
                     client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
                 }
 
-                var response = await client.PostAsJsonAsync($"https://localhost:7290/api/disputes/{id}/admin-response", responseDto);
+                var response = await client.PostAsJsonAsync($"http://backend:8080/api/disputes/{id}/admin-response", responseDto);
                 if (response.IsSuccessStatusCode)
                 {
                     TempData["SuccessMessage"] = "Gửi phản hồi thành công.";
@@ -408,3 +408,4 @@ namespace frontEnd.Controllers
         }
     }
 }
+

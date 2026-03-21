@@ -1,0 +1,46 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: cloneebay_db
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=QuyenChimTo123!
+    ports:
+      - "1433:1433"
+    volumes:
+      - db_data:/var/opt/mssql
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: cloneebay_backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      # Ghi đè connection string để kết nối vào database trong docker
+      - ConnectionStrings__MyCnn=Server=db,1433;Database=CloneEbayDB;User Id=sa;Password=QuyenChimTo123!;Encrypt=false;TrustServerCertificate=true
+    ports:
+      - "8080:8080"
+      - "7290:8080" # Ánh xạ port 7290 để các hardcode ở Frontend vẫn có thể gọi được
+    depends_on:
+      - db
+
+  frontend:
+    build:
+      context: ./frontEnd
+      dockerfile: Dockerfile
+    container_name: cloneebay_frontend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    ports:
+      - "8081:8080"
+      - "7173:8080" # Ánh xạ port 7173 giống môi trường dev
+    depends_on:
+      - backend
+    # Mẹo: Cấu hình để frontend container gọi 'localhost' sẽ trỏ ra máy Host
+    # Nhờ đó, các đoạn code hardcode 'localhost:7290' vẫn chạy được!
+    extra_hosts:
+      - "localhost:host-gateway"
+
+volumes:
+  db_data:

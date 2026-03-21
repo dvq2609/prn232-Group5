@@ -1,4 +1,4 @@
-﻿@using frontEnd.Models;
+@using frontEnd.Models;
 @model List<ProductViewModel>
 @{
     ViewData["Title"] = "Home Page";
@@ -53,7 +53,7 @@
                             {
                                 <img alt="@product.Title"
                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-                                     src="~/@product.Image" />
+                                    src="~/@product.Image" />
                             }
                             else
                             {
@@ -64,7 +64,7 @@
                         </div>
                         <h3 class="text-sm font-medium line-clamp-2 mb-1 group-hover:underline">@product.Title</h3>
                         <div class="text-base font-bold text-gray-900 mb-1">
-                            @product.Price?.ToString("N0") ₫
+                            @product.Price?.ToString("N0") ?
                         </div>
                         @if (!string.IsNullOrEmpty(product.CategoryName))
                         {
@@ -72,7 +72,7 @@
                         }
                         @if (!string.IsNullOrEmpty(product.SellerName))
                         {
-                            <div class="text-xs text-gray-400">Bởi: @product.SellerName</div>
+                            <div class="text-xs text-gray-400">B?i: @product.SellerName</div>
                         }
                     </a>
                 </div>
@@ -80,4 +80,5 @@
         </div>
     }
 </section>
+
 

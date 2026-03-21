@@ -1,4 +1,4 @@
-﻿@using frontEnd.Models;
+@using frontEnd.Models;
 @model ProductViewModel;
 @{
     ViewData["Title"] = "Product Details";
@@ -45,11 +45,11 @@
 
 <main class="max-w-7xl mx-auto px-4 py-8">
 
-    @* Toast thông báo *@
+    @* Toast th�ng b�o *@
     @if (TempData["SuccessMessage"] != null)
     {
         <div id="toastSuccess"
-             class="mb-4 flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 px-5 py-4 rounded-xl shadow-sm text-sm font-medium">
+            class="mb-4 flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 px-5 py-4 rounded-xl shadow-sm text-sm font-medium">
             <span class="material-symbols-outlined text-green-500">check_circle</span>
             @TempData["SuccessMessage"]
         </div>
@@ -57,7 +57,7 @@
     @if (TempData["ErrorMessage"] != null)
     {
         <div id="toastError"
-             class="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 px-5 py-4 rounded-xl shadow-sm text-sm font-medium">
+            class="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 px-5 py-4 rounded-xl shadow-sm text-sm font-medium">
             <span class="material-symbols-outlined text-red-500">error</span>
             @TempData["ErrorMessage"]
         </div>
@@ -82,14 +82,16 @@
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-2 mb-6 text-sm">
                     <div class="flex items-center">
                         <span class="text-slate-500 dark:text-slate-400">Sold by:</span>
-                        <a class="text-primary hover:underline ml-1 font-medium" href="/Feedback/SellerProfile?sellerId=@Model.SellerId">@Model.SellerName</a>
+                        <a class="text-primary hover:underline ml-1 font-medium"
+                            href="/Feedback/SellerProfile?sellerId=@Model.SellerId">@Model.SellerName</a>
                     </div>
                     <div class="h-4 w-[1px] bg-slate-200 dark:bg-zinc-700 hidden sm:block"></div>
                     <div class="flex items-center">
                         <span class="text-slate-500 dark:text-slate-400">Category:</span>
                         <a class="text-primary hover:underline ml-1 font-medium" href="#">@Model.CategoryName</a>
                     </div>
-                    <button onclick="if(typeof window.openChatWithUser === 'function') { window.openChatWithUser(@Model.SellerId, '@Html.Raw(Model.SellerName?.Replace("'", "\\'") ?? "")'); } else { alert('Vui lòng đăng nhập để sử dụng tính năng chat.'); window.location.href='/Auth/Login'; }"
+                    <button
+                        onclick="if(typeof window.openChatWithUser === 'function') { window.openChatWithUser(@Model.SellerId, '@Html.Raw(Model.SellerName?.Replace("'", "\\'") ?? "")'); } else { alert('Vui lòng đăng nhập để sử dụng tính năng chat.'); window.location.href='/Auth/Login'; }"
                         class="ml-auto inline-flex items-center px-3 py-1 border border-primary text-primary rounded-full text-xs font-semibold hover:bg-primary/5 transition-colors">
                         <span class="material-symbols-outlined text-sm mr-1">chat_bubble_outline</span>
                         Chat with seller
@@ -100,8 +102,9 @@
 
                         <span class="text-lg font-bold">@Model.AverageRating.ToString("F1")</span>
                         <span class="material-symbols-outlined filled-star text-2xl">star</span>
-                       
-                        <a class="text-primary hover:underline text-sm font-medium" href="#reviews">@Model.ReviewCount ratings</a>
+
+                        <a class="text-primary hover:underline text-sm font-medium" href="#reviews">@Model.ReviewCount
+                            ratings</a>
                     </div>
                     <div class="mb-8">
                         <div
@@ -141,11 +144,12 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12">
                 <div class="lg:col-span-4 space-y-6">
                     <div class="flex items-end gap-3">
-                        <span class="text-5xl font-bold text-slate-900 dark:text-white leading-none">@Model.AverageRating.ToString("F1")</span>
+                        <span
+                            class="text-5xl font-bold text-slate-900 dark:text-white leading-none">@Model.AverageRating.ToString("F1")</span>
                         <div class="flex flex-col">
                             <div class="flex text-amber-400">
-                                <span class="material-symbols-outlined filled-star text-2xl" >star</span>
-                              
+                                <span class="material-symbols-outlined filled-star text-2xl">star</span>
+
 
                             </div>
                             <span class="text-sm text-slate-500 dark:text-slate-400">@Model.ReviewCount ratings</span>
@@ -164,7 +168,9 @@
                             <div class="flex items-center gap-3">
                                 <span class="text-sm font-medium w-12 text-slate-600 dark:text-slate-400">@star star</span>
                                 <div class="flex-grow bg-slate-100 dark:bg-zinc-800 h-2.5 rounded-full overflow-hidden">
-                                    <div class="bg-primary h-full" style="width:@percent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%"></div>
+                                    <div class="bg-primary h-full"
+                                        style="width:@percent.ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)%">
+                                    </div>
                                 </div>
                                 <span class="text-sm text-slate-500 dark:text-slate-400 w-8 text-right">@count</span>
                             </div>
@@ -181,50 +187,53 @@
                     <div
                         class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-zinc-800">
                         <h3 class="text-lg font-bold text-slate-900 dark:text-white uppercase tracking-tight">
-                           Reviews
+                            Reviews
                         </h3>
-                       
+
                     </div>
-                          <div class="divide-y divide-slate-100 dark:divide-zinc-800">
-                              @foreach(var review in Model.Reviews ?? new List<ReviewViewImage>())
+                    <div class="divide-y divide-slate-100 dark:divide-zinc-800">
+                        @foreach (var review in Model.Reviews ?? new List<ReviewViewImage>())
                         {
                             <div class="py-8 first:pt-0">
                                 <div class="flex items-center justify-between mb-3">
                                     <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center">
+                                        <div
+                                            class="w-10 h-10 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center">
                                             <span class="material-symbols-outlined text-slate-400">person</span>
                                         </div>
                                         <div>
                                             <div class="text-sm font-bold text-slate-900 dark:text-white">
                                                 @review.ReviewerUsername
                                             </div>
-                                            <div class="text-xs text-slate-500 dark:text-slate-400">@review.CreatedAt.ToString("dd/MM/yyyy")</div>
+                                            <div class="text-xs text-slate-500 dark:text-slate-400">
+                                                @review.CreatedAt.ToString("dd/MM/yyyy")</div>
                                         </div>
                                     </div>
-                                   
+
                                     <div class="flex text-amber-400">
-                                        <div class="text-lg font-bold" style="color:black" > @review.Rating</div>
-                                        @for(int i = 0; i < review.Rating; i++)
+                                        <div class="text-lg font-bold" style="color:black"> @review.Rating</div>
+                                        @for (int i = 0; i < review.Rating; i++)
                                         {
                                             <span class="material-symbols-outlined filled-star text-lg">star</span>
                                         }
-    
-                                       
+
+
                                     </div>
                                 </div>
-                               
+
                                 <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-4">
-                                  @review.Comment
+                                    @review.Comment
                                 </p>
-                          
+
                             </div>
                         }
 
                     </div>
-                    
+
                 </div>
             </div>
         </div>
     </div>
 </main>
+
 
