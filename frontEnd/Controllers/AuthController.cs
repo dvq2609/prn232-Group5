@@ -28,7 +28,7 @@ namespace frontEnd.Controllers
             }
 
             var client = _httpClientFactory.CreateClient();
-            var response = await client.PostAsJsonAsync("https://localhost:7290/api/auth/login", loginViewModel);
+            var response = await client.PostAsJsonAsync("http://backend:8080/api/auth/login", loginViewModel);
             if (response.IsSuccessStatusCode)
             {
                 var loginResponse = await response.Content.ReadFromJsonAsync<LoginResponseViewModel>();

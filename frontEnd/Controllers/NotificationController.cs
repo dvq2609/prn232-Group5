@@ -6,7 +6,7 @@ namespace frontEnd.Controllers
     public class NotificationController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly string _apiBaseUrl = "https://localhost:7290/api/notifications";
+        private readonly string _apiBaseUrl = "http://backend:8080/api/notifications";
 
         public NotificationController(IHttpClientFactory httpClientFactory)
         {
@@ -113,3 +113,4 @@ namespace frontEnd.Controllers
         }
     }
 }
+

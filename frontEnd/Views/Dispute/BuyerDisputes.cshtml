@@ -189,7 +189,7 @@
                                         <div class="flex gap-2">
                                             @foreach (var img in dispute.Images)
                                             {
-                                                var backendBase = "https://localhost:7290";
+                                                var backendBase = "http://localhost:7290";
                                                 var imgSrc = img.FilePath.StartsWith("http") ? img.FilePath : backendBase + img.FilePath;
                                                 <a href="@imgSrc" target="_blank" class="block">
                                                     <img src="@imgSrc" alt="Image"
@@ -349,3 +349,4 @@
         }
     </script>
 </body>
+

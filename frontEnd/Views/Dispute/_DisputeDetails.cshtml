@@ -89,7 +89,7 @@
             <div class="flex flex-wrap gap-3">
                 @foreach (var img in Model.Images)
                 {
-                    var backendBase = "https://localhost:7290";
+                    var backendBase = "http://localhost:7290";
                     var imgSrc = img.FilePath.StartsWith("http") ? img.FilePath : backendBase + img.FilePath;
                     <a href="@imgSrc" target="_blank" class="block group relative rounded-lg border border-gray-200 overflow-hidden shadow-sm hover:ring-2 hover:ring-blue-500 transition-all">
                         <img src="@imgSrc" class="w-24 h-24 object-cover" alt="Image evidence" />
@@ -247,3 +247,4 @@
         </div>
     }
 </div>
+

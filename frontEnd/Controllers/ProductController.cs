@@ -14,7 +14,7 @@ namespace frontEnd.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var client = _httpClientFactory.CreateClient();
-            var response = await client.GetAsync($"https://localhost:7290/api/products/{id}");
+            var response = await client.GetAsync($"http://backend:8080/api/products/{id}");
             if (response.IsSuccessStatusCode)
             {
                 var product = await response.Content.ReadFromJsonAsync<ProductViewModel>();
@@ -51,7 +51,7 @@ namespace frontEnd.Controllers
                 unitPrice
             };
 
-            var response = await client.PostAsJsonAsync("https://localhost:7290/api/orders/buy-now", payload);
+            var response = await client.PostAsJsonAsync("http://backend:8080/api/orders/buy-now", payload);
 
             if (response.IsSuccessStatusCode)
             {

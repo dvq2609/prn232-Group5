@@ -6,7 +6,7 @@ namespace frontEnd.Controllers
     public class SellerReviewController : Controller
     {
         private readonly IHttpClientFactory _httpClientFactory;
-        private const string ApiBase = "https://localhost:7290";
+        private const string ApiBase = "http://backend:8080";
 
         public SellerReviewController(IHttpClientFactory httpClientFactory)
         {
@@ -263,3 +263,4 @@ namespace frontEnd.Controllers
         }
     }
 }
+

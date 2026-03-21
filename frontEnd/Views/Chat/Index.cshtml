@@ -94,7 +94,7 @@
 <script>
     const token = '@ViewBag.Token';
     const currentUserId = parseInt('@ViewBag.CurrentUserId', 10);
-    const backendUrl = "https://localhost:7290";
+    const backendUrl = "http://localhost:7290";
     
     let activePageContactId = null;
     let pageConnection = new signalR.HubConnectionBuilder()
@@ -317,3 +317,4 @@
         }
     };
 </script>
+

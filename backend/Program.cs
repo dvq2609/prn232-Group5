@@ -76,7 +76,7 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
     };
-    
+
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -94,12 +94,12 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        builder.SetIsOriginAllowed(_ => true)
-               .AllowAnyMethod()
-               .AllowAnyHeader()
-               .AllowCredentials();
+        policy.SetIsOriginAllowed(_ => true)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
     });
 });
 
@@ -107,13 +107,42 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    int retryCount = 7; // Thử tối đa 7 lần (chờ tối đa 35 giây)
+    while (retryCount > 0)
+    {
+        try
+        {
+            var context = services.GetRequiredService<backend.Models.CloneEbayDbContext>();
+            logger.LogInformation("Attempting to connect and migrate the database...");
+            context.Database.Migrate();
+            logger.LogInformation("Database migrated successfully.");
+            break;
+        }
+        catch (Exception ex)
+        {
+            retryCount--;
+            logger.LogWarning($"Database migration failed. SQL Server might still be booting up. Waiting 5 seconds... Retries left: {retryCount}");
+            if (retryCount == 0)
+            {
+                logger.LogError(ex, "Failed to migrate database after multiple retries.");
+                throw; // Ném luôn lỗi nếu thử mãi vẫn xịt
+            }
+            System.Threading.Thread.Sleep(5000);
+        }
+    }
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+// app.UseHttpsRedirection(); // Đã đóng lại để không bắt buộc chạy HTTPS trong Docker
 app.UseCors("AllowAll");
 app.UseStaticFiles(); // Cho phép serve file trong wwwroot
 app.UseAuthentication();

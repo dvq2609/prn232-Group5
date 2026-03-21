@@ -21,7 +21,7 @@ namespace frontEnd.Controllers
             try
             {
                 var client = _httpClientFactory.CreateClient();
-                var response = await client.GetAsync("https://localhost:7290/api/products");
+                var response = await client.GetAsync("http://backend:8080/api/products");
                 if (response.IsSuccessStatusCode)
                 {
                     var data = await response.Content.ReadFromJsonAsync<List<ProductViewModel>>();
@@ -48,3 +48,4 @@ namespace frontEnd.Controllers
         }
     }
 }
+
