@@ -1,0 +1,64 @@
+@{
+    ViewData["Title"] = "Customer Service";
+}
+
+<link href="~/css/customer-service.css" rel="stylesheet" />
+
+<div class="container">
+    <div class="breadcrumb">
+        <a href="/">Home</a> &gt; Customer Service
+    </div>
+</div>
+
+<div class="cs-header-banner">
+    <h1>How can we help you today?</h1>
+    <div class="cs-search-container">
+        <input type="text" class="cs-search-input" placeholder="Search eBay Help" />
+        <button class="cs-search-btn">
+            <i class="fas fa-search"></i>
+        </button>
+    </div>
+</div>
+
+<div class="cs-content-section">
+    <div class="cs-suggestions-area">
+        <h2 class="cs-section-title">Suggestions for you</h2>
+        <p class="cs-section-subtitle">Select an action or article to learn more</p>
+        
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <h3 style="font-size: 1.1rem; font-weight: bold; margin-bottom: 15px;">Get personalized help and see your recent orders</h3>
+                <a href="/Auth/Login" class="cs-contact-btn" style="width: 100%; box-sizing: border-box;">Sign in</a>
+            </div>
+            <div style="flex: 2; display: flex; flex-direction: column; gap: 15px;">
+                <a href="#" class="cs-article-card">
+                    <div>
+                        <div class="cs-article-title">Buying as a guest</div>
+                        <div class="cs-article-meta">Popular article - 4 min</div>
+                    </div>
+                    <div><i class="fas fa-chevron-right"></i></div>
+                </a>
+                <a href="#" class="cs-article-card">
+                    <div>
+                        <div class="cs-article-title">Get help if you bought as a guest</div>
+                        <div class="cs-article-meta">Popular article - 3 min</div>
+                    </div>
+                    <div><i class="fas fa-chevron-right"></i></div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="cs-help-options">
+        <div class="cs-help-box">
+            <h3>Need more help?</h3>
+            <p>Get the help you need from our automated assistant, or contact an agent</p>
+            <a href="/CustomerService/ContactUs" class="cs-contact-btn" style="width: 80%;"><i class="far fa-comments"></i> Contact us</a>
+        </div>
+        <div class="cs-help-box">
+            <h3>Other options for you</h3>
+            <a href="#" class="cs-text-link">Start a return</a>
+            <a href="#" class="cs-text-link">Report an item that hasn't arrived</a>
+        </div>
+    </div>
+</div>

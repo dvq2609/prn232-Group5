@@ -1,0 +1,267 @@
+/* Customer Service CSS Shared Across Pages */
+
+/* Breadcrumbs */
+.breadcrumb {
+    background: none;
+    padding: 20px 0;
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+.breadcrumb a {
+    color: #666;
+    text-decoration: none;
+}
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* Index Page Styles */
+.cs-header-banner {
+    background-color: #d1e5ff;
+    padding: 60px 20px;
+    text-align: center;
+}
+.cs-header-banner h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 30px;
+    text-align: left;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.cs-search-container {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+}
+.cs-search-input {
+    flex: 1;
+    padding: 15px 20px;
+    border: 1px solid #ccc;
+    border-radius: 30px;
+    font-size: 1.1rem;
+    outline: none;
+}
+.cs-search-btn {
+    background-color: #005cfc;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    margin-left: -60px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.cs-search-btn:hover {
+    background-color: #004ecc;
+}
+
+.cs-content-section {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.cs-suggestions-area {
+    background-color: #f7f7f7;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 40px;
+}
+
+.cs-section-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.cs-section-subtitle {
+    color: #666;
+    margin-bottom: 20px;
+}
+
+.cs-card-row {
+    display: flex;
+    gap: 20px;
+}
+
+.cs-article-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    flex: 1;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e0e0e0;
+}
+.cs-article-card:hover {
+    border-color: #005cfc;
+}
+.cs-article-title {
+    font-weight: bold;
+    text-decoration: underline;
+    margin-bottom: 5px;
+}
+.cs-article-meta {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.cs-help-options {
+    display: flex;
+    gap: 20px;
+}
+
+.cs-help-box {
+    background: #f7f7f7;
+    padding: 30px;
+    border-radius: 12px;
+    flex: 1;
+    text-align: center;
+}
+.cs-help-box h3 {
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+.cs-help-box p {
+    margin-bottom: 25px;
+    color: #333;
+}
+.cs-contact-btn {
+    background-color: #005cfc;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+}
+.cs-contact-btn:hover {
+    background-color: #004ecc;
+    color: white;
+}
+.cs-text-link {
+    display: block;
+    margin-bottom: 15px;
+    text-decoration: underline;
+    color: #333;
+}
+.cs-text-link:hover {
+    color: #005cfc;
+}
+
+/* Contact Us Page Styles */
+.cu-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+.cu-layout {
+    display: flex;
+    gap: 40px;
+    min-height: 500px;
+}
+.cu-sidebar {
+    flex: 1;
+    max-width: 350px;
+}
+.cu-main {
+    flex: 2;
+    border-left: 1px solid #e0e0e0;
+    padding-left: 40px;
+    position: relative;
+}
+.cu-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+.cu-contact-option {
+    margin-bottom: 25px;
+}
+.cu-chat-link {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    text-decoration: underline;
+    cursor: pointer;
+    display: block;
+    margin-bottom: 8px;
+}
+.cu-chat-link:hover {
+    color: #005cfc;
+}
+.cu-text-desc {
+    color: #666;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.cu-bold-link {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #333;
+    text-decoration: underline;
+    display: block;
+    margin-top: 25px;
+}
+.cu-bold-link:hover {
+    color: #005cfc;
+}
+
+.cu-or-divider {
+    position: absolute;
+    left: -20px;
+    top: 20%;
+    background: white;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.cu-article-item {
+    border-bottom: 1px solid #eee;
+    padding: 20px 0;
+}
+.cu-article-item:last-child {
+    border-bottom: none;
+}
+.cu-article-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #333;
+    text-decoration: none;
+    margin-bottom: 5px;
+    display: inline-block;
+}
+.cu-article-title:hover {
+    text-decoration: underline;
+    color: #005cfc;
+}
+.cu-article-desc {
+    margin-bottom: 8px;
+    color: #333;
+}
+.cu-article-meta {
+    color: #888;
+    font-size: 0.9rem;
+}

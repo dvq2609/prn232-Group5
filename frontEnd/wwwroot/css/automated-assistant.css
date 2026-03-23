@@ -1,0 +1,152 @@
+.aa-widget-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 350px;
+    height: 500px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    display: none; /* Hidden by default */
+    flex-direction: column;
+    z-index: 9999;
+    border: 1px solid #e0e0e0;
+    overflow: hidden;
+    font-family: inherit; /* Inherit font from body */
+}
+
+.aa-widget-container.active {
+    display: flex;
+}
+
+.aa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background: white;
+}
+
+.aa-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: bold;
+}
+
+.aa-close-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #666;
+}
+.aa-close-btn:hover {
+    color: #000;
+}
+
+.aa-messages-area {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #fcfcfc;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.aa-msg {
+    max-width: 85%;
+    padding: 12px 15px;
+    border-radius: 18px;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    word-wrap: break-word;
+}
+
+.aa-msg.bot {
+    background-color: #f1f1f1;
+    color: #333;
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+.aa-msg.user {
+    background-color: #005cfc;
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.aa-msg-label {
+    font-size: 0.75rem;
+    color: #888;
+    margin-top: 5px;
+    margin-left: 5px;
+    align-self: flex-start;
+}
+
+.aa-input-area {
+    padding: 15px;
+    border-top: 1px solid #e0e0e0;
+    background: white;
+    display: flex;
+    gap: 10px;
+}
+
+.aa-input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    outline: none;
+    font-size: 0.95rem;
+    background-color: #f5f5f5;
+}
+
+.aa-input:focus {
+    border-color: #005cfc;
+    background-color: white;
+}
+
+.aa-send-btn {
+    background: #e0e0e0;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: white;
+    transition: background 0.2s;
+}
+
+/* Basic toggle can be handled via JS */
+
+.aa-send-btn.active {
+    background: #005cfc;
+}
+
+.aa-send-btn:hover.active {
+    background: #004ecc;
+}
+
+/* Optional styling for a small trigger button if we want one */
+.aa-trigger-btn {
+    position: fixed;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    transform-origin: right bottom;
+    background: #005cfc;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    font-weight: bold;
+    z-index: 9998;
+    border: 1px solid #004ecc;
+    border-bottom: none;
+}
