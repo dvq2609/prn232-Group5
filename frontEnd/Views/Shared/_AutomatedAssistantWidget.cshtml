@@ -1,0 +1,25 @@
+<link href="~/css/automated-assistant.css" rel="stylesheet" />
+
+<div id="aa-widget" class="aa-widget-container">
+    <div class="aa-header">
+        <h3>Help</h3>
+        <button id="aa-close" class="aa-close-btn">&times;</button>
+    </div>
+    
+    <div id="aa-messages" class="aa-messages-area">
+        <!-- Messages will be injected here via JS -->
+    </div>
+    
+    <div class="aa-input-area">
+        <input type="text" id="aa-input" class="aa-input" placeholder="Please wait while I get more info..." autocomplete="off" />
+        <button id="aa-send" class="aa-send-btn">
+            <!-- Send icon (e.g. paper plane) -->
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" width="20" height="20">
+                <path d="M22 2L11 13" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </button>
+    </div>
+</div>
+
+<script src="~/js/automatedAssistant.js"></script>

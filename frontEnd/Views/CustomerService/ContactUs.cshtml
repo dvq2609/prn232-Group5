@@ -1,0 +1,73 @@
+@{
+    ViewData["Title"] = "Contact us - Customer Service";
+}
+
+<link href="~/css/customer-service.css" rel="stylesheet" />
+
+<div class="cu-container">
+    <div class="breadcrumb">
+        <a href="/">Home</a> &gt; <a href="/CustomerService">Customer Service</a> &gt; Choose a topic &gt; Contact us
+    </div>
+
+    <div class="cu-layout">
+        <div class="cu-sidebar">
+            <h1 class="cu-title">Contact us</h1>
+            
+            <div class="cu-contact-option">
+                <a class="cu-chat-link" onclick="openAutomatedAssistant()">Chat with our automated assistant</a>
+                <div class="cu-text-desc">Quickly get the help you need or we'll connect you to an agent</div>
+            </div>
+            
+            <a href="#" class="cu-bold-link">Check payment hold status</a>
+        </div>
+        
+        <div class="cu-main">
+            <div class="cu-or-divider">OR</div>
+            <h2 class="cu-title">Help yourself</h2>
+            
+            <div class="cu-article-item">
+                <a href="#" class="cu-article-title">Payments on hold</a>
+                <p class="cu-article-desc">We sometimes place payments on hold to ensure your order goes smoothly or while we confirm information to provide a safe marketplace for buyers and sellers.</p>
+                <div class="cu-article-meta">2 min article</div>
+            </div>
+            
+            <div class="cu-article-item">
+                <a href="#" class="cu-article-title">Getting paid for items you've sold</a>
+                <p class="cu-article-desc">Getting paid for items you've sold on eBay is simple. Your buyers can choose from many payment methods including PayPal, Apple Pay, Google Pay, and your checking account or Visa or Mastercard debit card. You can track all of your payouts in the Payments tab in Seller Hub.</p>
+                <div class="cu-article-meta">4 min article</div>
+            </div>
+            
+            <div class="cu-article-item">
+                <a href="#" class="cu-article-title">Pricing your items</a>
+                <div class="cu-article-meta">2 min article</div>
+            </div>
+            
+            <div class="cu-article-item">
+                <a href="#" class="cu-article-title">eBay Money Back Guarantee policy</a>
+                <p class="cu-article-desc">eBay Money Back Guarantee covers most transactions on eBay. It means buyers can get their money back if an item didn't arrive, is faulty or damaged, or doesn't match the listing.</p>
+                <div class="cu-article-meta">13 min article</div>
+            </div>
+            
+            <div class="cu-article-item">
+                <a href="#" class="cu-article-title">Handling payment disputes</a>
+                <div class="cu-article-meta">5 min article</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_AutomatedAssistantWidget")
+
+@section Scripts {
+    <script>
+        function openAutomatedAssistant() {
+            // Functionality to open chat bot goes here
+            // This is called from the chatbot widget script, assuming it's included globally or via partial view.
+            if(window.openBot) {
+                window.openBot();
+            } else {
+                console.error("Automated Assistant is not loaded.");
+            }
+        }
+    </script>
+}
