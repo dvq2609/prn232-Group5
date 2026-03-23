@@ -12,6 +12,12 @@
 @if (!string.IsNullOrEmpty(token) && currentUserId != null)
 {
     <link href="~/css/chat.css" rel="stylesheet" />
+    <style>
+        .status-dot { width: 10px; height: 10px; background-color: #ccc; border-radius: 50%; display: inline-block; margin-left: 5px; }
+        .status-dot.online { background-color: #4CAF50; }
+        .status-txt { font-size: 0.8rem; color: #888; margin-left: 5px; font-weight: normal; }
+        .status-txt.online { color: #4CAF50; }
+    </style>
     <div class="chat-widget-wrapper">
         <div class="chat-window" id="chatWindow">
             <!-- Contact List Panel -->
@@ -41,6 +47,7 @@
                             <span class="material-symbols-outlined">arrow_back</span>
                         </button>
                         <span id="widgetChatName">User Name</span>
+                        <span id="widgetChatStatus" class="status-txt">Offline</span>
                     </div>
                     <button class="chat-btn" onclick="toggleChatWindow()">
                         <span class="material-symbols-outlined">close</span>
@@ -74,6 +81,7 @@
             let activeContactId = null;
             let unreadCount = 0;
             let isWindowOpen = false;
+            let onlineUsers = new Set();
 
             const chatWindow = document.getElementById("chatWindow");
             const contactListEl = document.getElementById("widgetContactList");
@@ -105,9 +113,37 @@
                 .withAutomaticReconnect()
                 .build();
 
-            connection.start().then(() => {
+            connection.start().then(async () => {
+                try {
+                    const users = await connection.invoke("GetOnlineUsers");
+                    users.forEach(u => onlineUsers.add(u.toString()));
+                } catch(e) { console.error("Error fetching online users:", e); }
                 loadContacts();
             }).catch(console.error);
+
+            connection.on("UserOnline", (userId) => {
+                onlineUsers.add(userId.toString());
+                loadContacts();
+                updateChatHeaderStatus();
+            });
+
+            connection.on("UserOffline", (userId) => {
+                onlineUsers.delete(userId.toString());
+                loadContacts();
+                updateChatHeaderStatus();
+            });
+
+            function updateChatHeaderStatus() {
+                if (!activeContactId) return;
+                const statusEl = document.getElementById("widgetChatStatus");
+                if (onlineUsers.has(activeContactId.toString())) {
+                    statusEl.innerText = "Online";
+                    statusEl.classList.add("online");
+                } else {
+                    statusEl.innerText = "Offline";
+                    statusEl.classList.remove("online");
+                }
+            }
 
             connection.on("ReceiveMessage", (message) => {
                 loadContacts(); // Update latest msg in list
@@ -194,10 +230,13 @@
                     const avatarTxt = contact.username ? contact.username.charAt(0).toUpperCase() : 'U';
                     const lastMsgTxt = contact.lastMessage ? contact.lastMessage.content : "No messages yet";
                     
+                    const isOnline = onlineUsers.has(contact.id.toString());
+                    const statusDot = `<span class="status-dot ${isOnline ? 'online' : ''}"></span>`;
+                    
                     item.innerHTML = `
                         <div class="contact-avatar">${avatarTxt}</div>
                         <div class="contact-info">
-                            <div class="contact-name">${contact.username || 'User'}</div>
+                            <div class="contact-name">${contact.username || 'User'} ${statusDot}</div>
                             <div class="contact-last-msg">${lastMsgTxt}</div>
                         </div>
                     `;
@@ -208,6 +247,7 @@
             window.selectContact = async function(contact) {
                 activeContactId = contact.id;
                 document.getElementById("widgetChatName").innerText = contact.username || 'User';
+                updateChatHeaderStatus();
                 chatWindow.classList.add("in-chat");
                 
                 // Fetch history

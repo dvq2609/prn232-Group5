@@ -22,26 +22,33 @@ public class ChatHub : Hub
         _messageService = messageService;
     }
 
-    public override Task OnConnectedAsync()
+    public override async Task OnConnectedAsync()
     {
         var userId = Context.User?.Claims.FirstOrDefault(c => c.Type == "AccountId")?.Value;
         if (!string.IsNullOrEmpty(userId))
         {
+            var isNewConnection = !_userConnections.ContainsKey(userId);
             _userConnections[userId] = Context.ConnectionId;
+            
+            if (isNewConnection)
+            {
+                await Clients.Others.SendAsync("UserOnline", userId);
+            }
         }
 
-        return base.OnConnectedAsync();
+        await base.OnConnectedAsync();
     }
 
-    public override Task OnDisconnectedAsync(Exception? exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
         var userId = Context.User?.Claims.FirstOrDefault(c => c.Type == "AccountId")?.Value;
         if (!string.IsNullOrEmpty(userId))
         {
             _userConnections.TryRemove(userId, out _);
+            await Clients.Others.SendAsync("UserOffline", userId);
         }
 
-        return base.OnDisconnectedAsync(exception);
+        await base.OnDisconnectedAsync(exception);
     }
 
     public async Task SendMessage(int receiverId, string content)
@@ -62,5 +69,10 @@ public class ChatHub : Hub
             // Also send back to sender so they can update their UI directly if they prefer (optional)
             await Clients.Caller.SendAsync("MessageSent", savedMessageDto);
         }
+    }
+
+    public IEnumerable<string> GetOnlineUsers()
+    {
+        return _userConnections.Keys;
     }
 }
