@@ -1,0 +1,435 @@
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var role = HttpContextAccessor.HttpContext.Session.GetString("Role");
+    var userRole = role ?? "guest";
+}
+
+<link href="~/css/support-widget.css" rel="stylesheet" />
+
+<div class="support-widget-wrapper">
+    <!-- Support Window -->
+    <div class="support-window" id="supportWindow">
+        <!-- Header -->
+        <div class="support-header">
+            <div class="support-header-info">
+                <div class="support-header-avatar">
+                    <span class="material-symbols-outlined">support_agent</span>
+                </div>
+                <div class="support-header-text">
+                    <h3>eBay Assistant</h3>
+                    <p>Automated Support</p>
+                </div>
+            </div>
+            <button class="support-close-btn" onclick="toggleSupportWindow()">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="support-body">
+            <div class="support-messages" id="supportMessages">
+                <!-- Messages rendered by JS -->
+            </div>
+        </div>
+
+        <!-- Action Bar -->
+        <div class="support-action-bar" id="supportActionBar" style="display:none;">
+            <button class="support-action-btn" onclick="supportGoBack()">
+                <span class="material-symbols-outlined">arrow_back</span>
+                Back
+            </button>
+            <button class="support-action-btn" onclick="supportRestart()">
+                <span class="material-symbols-outlined">restart_alt</span>
+                Start Over
+            </button>
+        </div>
+
+        <div class="support-footer">
+            Powered by eBay Help Center
+        </div>
+    </div>
+
+    <!-- Trigger Button -->
+    <div class="support-trigger" id="supportTrigger" onclick="toggleSupportWindow()">
+        <span class="material-symbols-outlined trigger-icon">support_agent</span>
+    </div>
+</div>
+
+<script>
+(function () {
+    const userRole = '@userRole';
+    let isSupportOpen = false;
+    let navigationStack = [];
+
+    // ====== FAQ DATA TREES ======
+
+    const buyerFAQ = {
+        welcome: "Hi there! 👋 I'm your eBay Assistant. How can I help you today?",
+        categories: [
+            {
+                id: "buying",
+                icon: "shopping_cart",
+                label: "How to buy an item",
+                steps: [
+                    "Search for the item you want using the search bar at the top of the page.",
+                    "Click on a listing to view product details, price, shipping info, and seller rating.",
+                    "Click <b>\"Buy It Now\"</b> to purchase immediately, or place a bid if it's an auction.",
+                    "Select your preferred payment method and enter your shipping address.",
+                    "Review your order summary and click <b>\"Confirm and Pay\"</b> to complete the purchase.",
+                    "You'll receive a confirmation email with your order details and tracking info."
+                ]
+            },
+            {
+                id: "tracking",
+                icon: "local_shipping",
+                label: "Track my order",
+                steps: [
+                    "Go to <b>\"My Purchases\"</b> from the top navigation bar.",
+                    "Find the order you want to track in your purchase history.",
+                    "Click on the order to see its current status and tracking details.",
+                    "If the seller has provided a tracking number, click it to track via the carrier's website.",
+                    "If your order hasn't shipped yet, you can contact the seller directly via Messages."
+                ]
+            },
+            {
+                id: "refund",
+                icon: "currency_exchange",
+                label: "Request a refund",
+                steps: [
+                    "Go to <b>\"My Purchases\"</b> and find the relevant order.",
+                    "Click <b>\"Open a Dispute\"</b> or navigate to <b>\"Buyer Disputes\"</b> from the menu.",
+                    "Select the reason for your refund request (item not received, item not as described, etc.).",
+                    "Provide a clear description and upload photos as evidence if applicable.",
+                    "Submit your dispute — the seller will be notified and has time to respond.",
+                    "An admin will review and resolve the dispute if the seller doesn't respond within the deadline."
+                ]
+            },
+            {
+                id: "dispute",
+                icon: "gavel",
+                label: "Open a dispute",
+                steps: [
+                    "Navigate to <b>\"Buyer Disputes\"</b> from the top menu bar.",
+                    "Click <b>\"Open New Dispute\"</b> and select the order you want to dispute.",
+                    "Choose a dispute reason: Item Not Received, Item Not As Described, or Other.",
+                    "Write a detailed explanation of the issue and attach supporting evidence.",
+                    "Submit — the seller will receive a notification to respond.",
+                    "Check back on the <b>\"Buyer Disputes\"</b> page to monitor the dispute progress."
+                ]
+            },
+            {
+                id: "payment",
+                icon: "payment",
+                label: "Payment methods & issues",
+                steps: [
+                    "We currently support secure payments through the platform's built-in payment system.",
+                    "If your payment fails, check that your card details are correct and that your bank isn't blocking the transaction.",
+                    "Try using a different payment method or browser if the issue persists.",
+                    "For payment disputes, go to <b>\"Buyer Disputes\"</b> and open a case.",
+                    "If you still have trouble, contact the seller via Messages for assistance."
+                ]
+            },
+            {
+                id: "contact_seller",
+                icon: "chat",
+                label: "Contact a seller",
+                steps: [
+                    "Click the <b>chat icon</b> at the bottom-right corner of any page to open Messages.",
+                    "Use the search bar to search for the seller's username.",
+                    "Click <b>\"Chat\"</b> to start a conversation.",
+                    "You can also click <b>\"Contact Seller\"</b> from any product listing page.",
+                    "Messages are delivered in real-time — the seller will be notified immediately."
+                ]
+            }
+        ]
+    };
+
+    const sellerFAQ = {
+        welcome: "Hi there! 👋 I'm your eBay Seller Assistant. How can I help you today?",
+        categories: [
+            {
+                id: "list_product",
+                icon: "add_box",
+                label: "How to list a product",
+                steps: [
+                    "Click <b>\"Sell\"</b> from the top navigation bar.",
+                    "Fill in your product details: title, description, category, and condition.",
+                    "Upload high-quality photos of your item (at least 1 photo required).",
+                    "Set your price — choose between fixed price or auction-style listing.",
+                    "Specify shipping options, handling time, and return policy.",
+                    "Review your listing and click <b>\"Submit\"</b> to post it live."
+                ]
+            },
+            {
+                id: "manage_orders",
+                icon: "inventory_2",
+                label: "Manage sold orders",
+                steps: [
+                    "Go to <b>\"Sold Orders\"</b> from the top navigation menu.",
+                    "View all your orders with their current status (Pending, Shipped, Delivered, etc.).",
+                    "Click on an order to see buyer details and shipping address.",
+                    "Update the order status and add tracking information after shipping.",
+                    "Ensure timely shipping to maintain your seller rating."
+                ]
+            },
+            {
+                id: "handle_dispute",
+                icon: "gavel",
+                label: "Handle a dispute",
+                steps: [
+                    "Go to <b>\"Seller Disputes\"</b> from the top navigation menu.",
+                    "Review open disputes filed by buyers against your orders.",
+                    "Click on a dispute to see the buyer's complaint and evidence.",
+                    "Respond with your side of the story and upload counter-evidence if needed.",
+                    "The admin will review both sides and make a fair decision.",
+                    "Respond promptly — unresponsive sellers may receive an unfavorable ruling."
+                ]
+            },
+            {
+                id: "reviews",
+                icon: "star",
+                label: "View my reviews",
+                steps: [
+                    "Navigate to <b>\"My Reviews\"</b> from the top menu bar.",
+                    "See all feedback left by buyers on your completed orders.",
+                    "Your overall seller rating is calculated from these reviews.",
+                    "High ratings increase buyer trust and improve your listing visibility.",
+                    "Address negative reviews by contacting the buyer via Messages to resolve issues."
+                ]
+            },
+            {
+                id: "seller_payment",
+                icon: "account_balance",
+                label: "Payments & earnings",
+                steps: [
+                    "Payments are processed through the platform's secure payment system.",
+                    "When a buyer completes a purchase, the payment is held securely.",
+                    "After the buyer confirms delivery (or after the delivery deadline), funds are released.",
+                    "You can view your earnings and transaction history in your seller dashboard.",
+                    "For any payment discrepancies, open a support ticket or contact admin."
+                ]
+            },
+            {
+                id: "contact_buyer",
+                icon: "chat",
+                label: "Contact a buyer",
+                steps: [
+                    "Click the <b>chat icon</b> at the bottom-right corner to open Messages.",
+                    "Search for the buyer's username in the search bar.",
+                    "Send a message — it will be delivered in real-time.",
+                    "You can also message buyers directly from the <b>\"Sold Orders\"</b> page.",
+                    "Prompt communication helps resolve issues and builds buyer confidence."
+                ]
+            }
+        ]
+    };
+
+    const guestFAQ = {
+        welcome: "Hi there! 👋 Welcome to eBay Help Center. How can I help you?",
+        categories: [
+            {
+                id: "get_started",
+                icon: "rocket_launch",
+                label: "Getting started on eBay",
+                steps: [
+                    "Click <b>\"Sign in\"</b> at the top-left corner of the page.",
+                    "If you don't have an account, click <b>\"Register\"</b> to create one.",
+                    "Fill in your details: email, username, and password.",
+                    "Verify your email address by clicking the link sent to your inbox.",
+                    "Once logged in, you can browse products, make purchases, or start selling!"
+                ]
+            },
+            {
+                id: "how_to_buy",
+                icon: "shopping_cart",
+                label: "How to buy on eBay",
+                steps: [
+                    "Create an account and sign in (see \"Getting started\" above).",
+                    "Use the search bar to find items you're interested in.",
+                    "Click on a listing to view details, photos, price, and shipping options.",
+                    "Click <b>\"Buy It Now\"</b> to purchase instantly.",
+                    "Enter your payment and shipping details to complete the order."
+                ]
+            },
+            {
+                id: "how_to_sell",
+                icon: "storefront",
+                label: "How to sell on eBay",
+                steps: [
+                    "Create an account and sign in as a seller.",
+                    "Click <b>\"Sell\"</b> in the top navigation menu.",
+                    "Create a listing with product details, photos, and pricing.",
+                    "Once a buyer purchases your item, you'll receive a notification.",
+                    "Ship the item and update the tracking information in your dashboard."
+                ]
+            },
+            {
+                id: "safety",
+                icon: "shield",
+                label: "Safety & security",
+                steps: [
+                    "eBay provides <b>Money Back Guarantee</b> for eligible purchases.",
+                    "All payments are processed securely through our platform.",
+                    "Never share your password or personal information with other users.",
+                    "Report suspicious listings or users using the <b>Report</b> button.",
+                    "If you have a problem with an order, use the <b>Dispute</b> system to get help."
+                ]
+            }
+        ]
+    };
+
+    // ====== SELECT FAQ BASED ON ROLE ======
+    function getCurrentFAQ() {
+        if (userRole === 'buyer') return buyerFAQ;
+        if (userRole === 'seller') return sellerFAQ;
+        return guestFAQ;
+    }
+
+    // ====== DOM REFS ======
+    const supportWindow = document.getElementById('supportWindow');
+    const supportMessages = document.getElementById('supportMessages');
+    const supportActionBar = document.getElementById('supportActionBar');
+    const supportTrigger = document.getElementById('supportTrigger');
+
+    // ====== TOGGLE WINDOW ======
+    window.toggleSupportWindow = function () {
+        isSupportOpen = !isSupportOpen;
+        if (isSupportOpen) {
+            supportWindow.classList.add('open');
+            supportTrigger.classList.add('active');
+            if (navigationStack.length === 0) {
+                showWelcome();
+            }
+        } else {
+            supportWindow.classList.remove('open');
+            supportTrigger.classList.remove('active');
+        }
+    };
+
+    // ====== SHOW WELCOME + CATEGORIES ======
+    function showWelcome() {
+        const faq = getCurrentFAQ();
+        supportMessages.innerHTML = '';
+        navigationStack = ['welcome'];
+        supportActionBar.style.display = 'none';
+
+        addBotMessage(faq.welcome, function () {
+            addCategoryOptions(faq.categories);
+        });
+    }
+
+    // ====== ADD BOT MESSAGE WITH TYPING ======
+    function addBotMessage(text, callback) {
+        // Show typing indicator
+        const typingEl = document.createElement('div');
+        typingEl.className = 'support-typing';
+        typingEl.innerHTML = `
+            <div class="support-msg-avatar">
+                <span class="material-symbols-outlined">headset_mic</span>
+            </div>
+            <div class="support-typing-dots">
+                <span></span><span></span><span></span>
+            </div>
+        `;
+        supportMessages.appendChild(typingEl);
+        scrollSupportToBottom();
+
+        setTimeout(function () {
+            typingEl.remove();
+
+            const msgEl = document.createElement('div');
+            msgEl.className = 'support-msg';
+            msgEl.innerHTML = `
+                <div class="support-msg-avatar">
+                    <span class="material-symbols-outlined">headset_mic</span>
+                </div>
+                <div class="support-msg-bubble">${text}</div>
+            `;
+            supportMessages.appendChild(msgEl);
+            scrollSupportToBottom();
+
+            if (callback) {
+                setTimeout(callback, 200);
+            }
+        }, 800);
+    }
+
+    // ====== ADD USER SELECTED MESSAGE ======
+    function addUserMessage(text) {
+        const msgEl = document.createElement('div');
+        msgEl.className = 'support-msg-user';
+        msgEl.innerHTML = `<div class="support-user-bubble">${text}</div>`;
+        supportMessages.appendChild(msgEl);
+        scrollSupportToBottom();
+    }
+
+    // ====== SHOW CATEGORY OPTIONS ======
+    function addCategoryOptions(categories) {
+        const optionsEl = document.createElement('div');
+        optionsEl.className = 'support-options';
+        optionsEl.id = 'supportCurrentOptions';
+
+        categories.forEach(function (cat) {
+            const btn = document.createElement('button');
+            btn.className = 'support-option-btn';
+            btn.innerHTML = `<span class="material-symbols-outlined">${cat.icon}</span> ${cat.label}`;
+            btn.addEventListener('click', function () {
+                selectCategory(cat);
+            });
+            optionsEl.appendChild(btn);
+        });
+
+        supportMessages.appendChild(optionsEl);
+        scrollSupportToBottom();
+    }
+
+    // ====== SELECT A CATEGORY ======
+    function selectCategory(category) {
+        // Remove current options
+        const currentOpts = document.getElementById('supportCurrentOptions');
+        if (currentOpts) currentOpts.remove();
+
+        // Show user choice
+        addUserMessage(category.label);
+
+        navigationStack.push(category.id);
+        supportActionBar.style.display = 'flex';
+
+        // Show steps
+        addBotMessage(buildStepsHTML(category.label, category.steps));
+    }
+
+    // ====== BUILD STEP-BY-STEP HTML ======
+    function buildStepsHTML(title, steps) {
+        let html = `<strong>${title}</strong><ol class="support-step-list">`;
+        steps.forEach(function (step) {
+            html += `<li>${step}</li>`;
+        });
+        html += '</ol>';
+        html += '<div style="margin-top: 10px; font-size: 0.8rem; color: #707070;">Was this helpful? Choose another topic below or click <b>Start Over</b>.</div>';
+        return html;
+    }
+
+    // ====== NAVIGATION ======
+    window.supportGoBack = function () {
+        if (navigationStack.length <= 1) {
+            showWelcome();
+        } else {
+            navigationStack.pop();
+            showWelcome();
+        }
+    };
+
+    window.supportRestart = function () {
+        navigationStack = [];
+        showWelcome();
+    };
+
+    // ====== SCROLL ======
+    function scrollSupportToBottom() {
+        supportMessages.scrollTop = supportMessages.scrollHeight;
+    }
+
+    // ====== AUTO-INIT: show welcome on first open ======
+})();
+</script>

@@ -43,7 +43,7 @@
                     <a class="hover:underline" asp-action="Logout" asp-controller="Auth">Logout</a>
                 }
                 <a class="hover:underline" href="#">Daily Deals</a>
-                <a class="hover:underline" href="#">Help &amp; Contact</a>
+                <a class="hover:underline" asp-action="Index" asp-controller="CustomerService">Help &amp; Contact</a>
 
                 @if (role == "buyer")
                 {
@@ -145,6 +145,7 @@
         @RenderBody()
     </main>
     @await Html.PartialAsync("_ChatWidget")
+    @await Html.PartialAsync("_SupportWidget")
     <footer class="bg-white border-t border-gray-200 pt-12 pb-8 mt-12">
         <div class="max-w-[1300px] mx-auto px-4">
             <div class="grid grid-cols-5 gap-8 mb-12">
@@ -194,7 +195,7 @@
                     <h4 class="font-bold text-sm mb-4">Help &amp; Contact</h4>
                     <ul class="space-y-2 text-xs text-gray-600">
                         <li><a class="hover:underline" href="#">Seller Center</a></li>
-                        <li><a class="hover:underline" href="#">Contact Us</a></li>
+                        <li><a class="hover:underline" asp-action="ContactUs" asp-controller="CustomerService">Contact Us</a></li>
                         <li><a class="hover:underline" href="#">Returns</a></li>
                     </ul>
                     <h4 class="font-bold text-sm mb-4 mt-6">Community</h4>
