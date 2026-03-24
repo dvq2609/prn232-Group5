@@ -14,18 +14,42 @@
         </div>
         
         <ul class="cp-nav-section">
-            <li class="active">Inbox</li>
-            <li>From members</li>
-            <li>Unread from members</li>
-            <li>From eBay</li>
-            <li>Unread from eBay</li>
-            <li>Sent</li>
-            <li>Deleted</li>
-            <li>Archive</li>
+            <li class="active" data-folder="inbox" onclick="setActiveFolder('inbox', this)">
+                <span class="cp-nav-label"><span class="material-symbols-outlined cp-nav-icon">inbox</span> Inbox</span>
+                <span class="cp-badge" id="badge-inbox" style="display:none;">0</span>
+            </li>
+            <li data-folder="from-members" onclick="setActiveFolder('from-members', this)">
+                <span class="cp-nav-label"><span class="material-symbols-outlined cp-nav-icon">group</span> From members</span>
+                <span class="cp-badge" id="badge-from-members" style="display:none;">0</span>
+            </li>
+            <li data-folder="unread-members" onclick="setActiveFolder('unread-members', this)">
+                <span class="cp-nav-label"><span class="material-symbols-outlined cp-nav-icon">mark_email_unread</span> Unread from members</span>
+                <span class="cp-badge" id="badge-unread-members" style="display:none;">0</span>
+            </li>
+            <li data-folder="from-ebay" onclick="setActiveFolder('from-ebay', this)">
+                <span class="cp-nav-label"><span class="material-symbols-outlined cp-nav-icon">storefront</span> From cloneEbay</span>
+                <span class="cp-badge" id="badge-from-ebay" style="display:none;">0</span>
+            </li>
+            <li data-folder="unread-ebay" onclick="setActiveFolder('unread-ebay', this)">
+                <span class="cp-nav-label"><span class="material-symbols-outlined cp-nav-icon">notifications</span> Unread from cloneEbay</span>
+                <span class="cp-badge" id="badge-unread-ebay" style="display:none;">0</span>
+            </li>
+            <li data-folder="sent" onclick="setActiveFolder('sent', this)">
+                <span class="cp-nav-label"><span class="material-symbols-outlined cp-nav-icon">send</span> Sent</span>
+            </li>
+            <li data-folder="deleted" onclick="setActiveFolder('deleted', this)">
+                <span class="cp-nav-label"><span class="material-symbols-outlined cp-nav-icon">delete</span> Deleted</span>
+            </li>
+            <li data-folder="archive" onclick="setActiveFolder('archive', this)">
+                <span class="cp-nav-label"><span class="material-symbols-outlined cp-nav-icon">archive</span> Archive</span>
+            </li>
         </ul>
         
         <div class="cp-nav-group-title">Folders</div>
-        <div class="cp-nav-link">Create folder</div>
+        <div class="cp-nav-link" onclick="createCustomFolder()">
+            <span class="material-symbols-outlined" style="font-size:16px;">add</span> Create folder
+        </div>
+        <div id="customFolders"></div>
     </div>
     
     <!-- Middle Column: Conversations List -->
@@ -34,17 +58,20 @@
             <div class="cp-search-box">
                 <span class="material-symbols-outlined">search</span>
                 <input type="text" id="pageSearchUserInput" placeholder="Search Username to chat..." />
-                <button onclick="startNewPageChat()" style="position:absolute; right:10px; top:5px; background: #3665f3; color: white; border: none; border-radius: 15px; padding: 5px 15px; cursor: pointer; font-size: 0.8rem;">Chat</button>
+                <button onclick="startNewPageChat()" class="cp-search-chat-btn">Chat</button>
             </div>
         </div>
         
         <div class="cp-list-actions">
-            <input type="checkbox" />
-            <span class="material-symbols-outlined" style="cursor:pointer" title="Delete">delete</span>
-            <span class="material-symbols-outlined" style="cursor:pointer" title="Mark as read">mark_email_read</span>
-            <span class="material-symbols-outlined" style="cursor:pointer" title="Mark as unread">mark_email_unread</span>
-            <span class="material-symbols-outlined" style="cursor:pointer" title="Archive">archive</span>
+            <input type="checkbox" id="selectAllCheckbox" onclick="toggleSelectAll()" title="Select all" />
+            <span class="material-symbols-outlined cp-action-icon" onclick="bulkDelete()" title="Delete">delete</span>
+            <span class="material-symbols-outlined cp-action-icon" onclick="bulkMarkRead()" title="Mark as read">mark_email_read</span>
+            <span class="material-symbols-outlined cp-action-icon" onclick="bulkMarkUnread()" title="Mark as unread">mark_email_unread</span>
+            <span class="material-symbols-outlined cp-action-icon" onclick="bulkArchive()" title="Archive">archive</span>
+            <span class="material-symbols-outlined cp-action-icon" onclick="bulkRestore()" title="Restore" id="restoreBtn" style="display:none;">restore_from_trash</span>
         </div>
+        
+        <div class="cp-folder-title" id="folderTitle">Inbox</div>
         
         <div class="cp-conversations" id="pageContactList">
             <div style="padding: 30px; text-align: center; color: #888;">Loading...</div>
@@ -55,7 +82,11 @@
     <div class="cp-conversation" id="pageChatArea" style="display: none;">
         <div class="cp-conv-header">
             <h3 id="pageChatName">User Name</h3>
-            <span class="material-symbols-outlined" style="cursor:pointer; color:#555;">more_horiz</span>
+            <div class="cp-conv-header-actions">
+                <span class="material-symbols-outlined cp-action-icon" onclick="deleteCurrentConvo()" title="Delete">delete</span>
+                <span class="material-symbols-outlined cp-action-icon" onclick="archiveCurrentConvo()" title="Archive">archive</span>
+                <span class="material-symbols-outlined" style="cursor:pointer; color:#555;">more_horiz</span>
+            </div>
         </div>
         
         <div class="cp-conv-warning">
@@ -95,28 +126,84 @@
 <script>
     const token = '@ViewBag.Token';
     const currentUserId = parseInt('@ViewBag.CurrentUserId', 10);
-    const backendUrl = "http://localhost:7290";
+    const backendUrl = "@ViewBag.BackendUrl";
     
+    // ========== STATE MANAGEMENT ==========
     let activePageContactId = null;
+    let currentFolder = 'inbox';
+    let allContacts = []; // Cache all contacts
+    
+    // LocalStorage keys
+    const STORAGE_KEY_READ = `chat_read_${currentUserId}`;
+    const STORAGE_KEY_DELETED = `chat_deleted_${currentUserId}`;
+    const STORAGE_KEY_ARCHIVED = `chat_archived_${currentUserId}`;
+    const STORAGE_KEY_FOLDERS = `chat_folders_${currentUserId}`;
+
+    function getReadMessages() {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_READ) || '{}');
+    }
+    function setReadMessages(data) {
+        localStorage.setItem(STORAGE_KEY_READ, JSON.stringify(data));
+    }
+    function getDeletedConvos() {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+    }
+    function setDeletedConvos(data) {
+        localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(data));
+    }
+    function getArchivedConvos() {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_ARCHIVED) || '[]');
+    }
+    function setArchivedConvos(data) {
+        localStorage.setItem(STORAGE_KEY_ARCHIVED, JSON.stringify(data));
+    }
+    function getCustomFolders() {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_FOLDERS) || '[]');
+    }
+    function setCustomFolders(data) {
+        localStorage.setItem(STORAGE_KEY_FOLDERS, JSON.stringify(data));
+    }
+
+    function isConvoRead(contactId) {
+        const readData = getReadMessages();
+        return readData[contactId] === true;
+    }
+    function markConvoRead(contactId) {
+        const readData = getReadMessages();
+        readData[contactId] = true;
+        setReadMessages(readData);
+    }
+    function markConvoUnread(contactId) {
+        const readData = getReadMessages();
+        delete readData[contactId];
+        setReadMessages(readData);
+    }
+
+    // ========== SIGNALR CONNECTION ==========
     let pageConnection = new signalR.HubConnectionBuilder()
         .withUrl(`${backendUrl}/chathub`, {
             accessTokenFactory: () => token,
-            skipNegotiation: true, // For WebSockets
+            skipNegotiation: true,
             transport: signalR.HttpTransportType.WebSockets
         })
         .withAutomaticReconnect()
         .build();
 
-    // Start Connection
     pageConnection.start().then(() => {
         console.log("Connected to ChatHub via Page");
         loadPageContacts();
     }).catch(err => console.error("SignalR Connection Error: ", err.toString()));
 
     pageConnection.on("ReceiveMessage", (message) => {
+        // Mark conversation as unread when receiving new message
+        markConvoUnread(message.senderId);
         loadPageContacts(); 
         if (message.senderId === activePageContactId || message.receiverId === activePageContactId) {
             appendPageMessage(message);
+            // If currently viewing this conversation, mark as read
+            if (message.senderId === activePageContactId) {
+                markConvoRead(activePageContactId);
+            }
         }
     });
 
@@ -127,6 +214,7 @@
         }
     });
 
+    // ========== INPUT HANDLERS ==========
     const msgInput = document.getElementById("pageMessageInput");
     const sendBtn = document.getElementById("pageSendBtn");
     
@@ -156,19 +244,111 @@
 
         pageConnection.invoke("SendMessage", activePageContactId, content).catch(console.error);
         msgInput.value = "";
-        
         sendBtn.classList.remove("active");
         sendBtn.disabled = true;
     }
 
+    // ========== FOLDER / SIDEBAR ==========
+    function setActiveFolder(folder, element) {
+        currentFolder = folder;
+        
+        // Update active state in sidebar
+        document.querySelectorAll('.cp-nav-section li').forEach(li => li.classList.remove('active'));
+        if (element) element.classList.add('active');
+        
+        // Update folder title
+        const titles = {
+            'inbox': 'Inbox',
+            'from-members': 'From members',
+            'unread-members': 'Unread from members',
+            'from-ebay': 'From cloneEbay',
+            'unread-ebay': 'Unread from cloneEbay',
+            'sent': 'Sent',
+            'deleted': 'Deleted',
+            'archive': 'Archive'
+        };
+        document.getElementById('folderTitle').textContent = titles[folder] || folder;
+        
+        // Show/hide restore button
+        const restoreBtn = document.getElementById('restoreBtn');
+        restoreBtn.style.display = (folder === 'deleted' || folder === 'archive') ? 'inline' : 'none';
+        
+        // Re-render filtered contacts
+        renderPageContacts(allContacts);
+        
+        // Hide chat area when switching folders
+        document.getElementById("pageChatArea").style.display = "none";
+        document.getElementById("pageNoChatSelected").style.display = "flex";
+        activePageContactId = null;
+    }
+
+    function filterContactsByFolder(contacts) {
+        const deleted = getDeletedConvos();
+        const archived = getArchivedConvos();
+        
+        switch (currentFolder) {
+            case 'inbox':
+                return contacts.filter(c => !deleted.includes(c.id) && !archived.includes(c.id));
+            case 'from-members':
+                return contacts.filter(c => !deleted.includes(c.id) && !archived.includes(c.id) && (c.role || '').toLowerCase() !== 'admin');
+            case 'unread-members':
+                return contacts.filter(c => !deleted.includes(c.id) && !archived.includes(c.id) && !isConvoRead(c.id) && (c.role || '').toLowerCase() !== 'admin' && !c.lastMessageIsMine);
+            case 'from-ebay':
+                return contacts.filter(c => !deleted.includes(c.id) && !archived.includes(c.id) && (c.role || '').toLowerCase() === 'admin');
+            case 'unread-ebay':
+                return contacts.filter(c => !deleted.includes(c.id) && !archived.includes(c.id) && !isConvoRead(c.id) && (c.role || '').toLowerCase() === 'admin' && !c.lastMessageIsMine);
+            case 'sent':
+                return contacts.filter(c => !deleted.includes(c.id) && !archived.includes(c.id) && c.lastMessageIsMine);
+            case 'deleted':
+                return contacts.filter(c => deleted.includes(c.id));
+            case 'archive':
+                return contacts.filter(c => archived.includes(c.id));
+            default:
+                return contacts.filter(c => !deleted.includes(c.id) && !archived.includes(c.id));
+        }
+    }
+
+    // ========== BADGE COUNTS ==========
+    function updateBadgeCounts(contacts) {
+        const deleted = getDeletedConvos();
+        const archived = getArchivedConvos();
+        
+        const activeContacts = contacts.filter(c => !deleted.includes(c.id) && !archived.includes(c.id));
+        
+        const inboxUnread = activeContacts.filter(c => !isConvoRead(c.id) && !c.lastMessageIsMine).length;
+        const memberUnread = activeContacts.filter(c => !isConvoRead(c.id) && (c.role || '').toLowerCase() !== 'admin' && !c.lastMessageIsMine).length;
+        const ebayContacts = activeContacts.filter(c => (c.role || '').toLowerCase() === 'admin');
+        const ebayUnread = ebayContacts.filter(c => !isConvoRead(c.id) && !c.lastMessageIsMine).length;
+        
+        setBadge('badge-inbox', inboxUnread);
+        setBadge('badge-from-members', memberUnread);
+        setBadge('badge-unread-members', memberUnread);
+        setBadge('badge-from-ebay', ebayContacts.length > 0 ? ebayUnread : 0);
+        setBadge('badge-unread-ebay', ebayUnread);
+    }
+
+    function setBadge(elementId, count) {
+        const badge = document.getElementById(elementId);
+        if (badge) {
+            if (count > 0) {
+                badge.style.display = 'inline';
+                badge.textContent = count;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+
+    // ========== CONTACTS LIST ==========
     async function loadPageContacts() {
         try {
             const response = await fetch(`${backendUrl}/api/message/contacts`, {
                 headers: { "Authorization": `Bearer ${token}` }
             });
             if (response.ok) {
-                const contacts = await response.json();
-                renderPageContacts(contacts);
+                allContacts = await response.json();
+                renderPageContacts(allContacts);
+                updateBadgeCounts(allContacts);
             }
         } catch (error) {
             console.error(error);
@@ -179,57 +359,83 @@
         const list = document.getElementById("pageContactList");
         list.innerHTML = "";
         
-        if (!contacts || contacts.length === 0) {
-            list.innerHTML = `<div style="padding: 20px; text-align: center; color: #888;">No conversations yet.</div>`;
+        const filtered = filterContactsByFolder(contacts);
+        
+        if (!filtered || filtered.length === 0) {
+            const emptyMessages = {
+                'inbox': 'No messages yet.',
+                'from-members': 'No messages from members.',
+                'unread-members': 'No unread messages from members.',
+                'from-ebay': 'No messages from cloneEbay.',
+                'unread-ebay': 'No unread messages from cloneEbay.',
+                'sent': 'No sent messages.',
+                'deleted': 'No deleted messages.',
+                'archive': 'No archived messages.'
+            };
+            list.innerHTML = `<div class="cp-empty-state">
+                <span class="material-symbols-outlined" style="font-size:48px; color:#ccc; margin-bottom:10px;">mail</span>
+                <p>${emptyMessages[currentFolder] || 'No messages.'}</p>
+            </div>`;
             return;
         }
         
-        contacts.forEach(contact => {
+        filtered.forEach(contact => {
             const item = document.createElement("div");
-            item.className = `cp-convo-item ${contact.id === activePageContactId ? 'active' : ''}`;
+            const isUnread = !isConvoRead(contact.id) && !contact.lastMessageIsMine;
+            item.className = `cp-convo-item ${contact.id === activePageContactId ? 'active' : ''} ${isUnread ? 'unread' : ''}`;
+            item.setAttribute('data-contact-id', contact.id);
             item.onclick = () => selectPageContact(contact, item);
             
             const avatarTxt = contact.username ? contact.username.charAt(0).toUpperCase() : 'U';
+            const isAdmin = (contact.role || '').toLowerCase() === 'admin';
+            const avatarClass = isAdmin ? 'cp-convo-avatar ebay-avatar' : 'cp-convo-avatar';
             let lastMsgTxt = contact.lastMessage ? contact.lastMessage.content : "No messages yet";
             
             let timeTxt = "";
             if (contact.lastMessage) {
                 const d = new Date(contact.lastMessage.timestamp);
-                timeTxt = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
+                const now = new Date();
+                if (d.toDateString() === now.toDateString()) {
+                    timeTxt = d.getHours().toString().padStart(2,'0') + ":" + d.getMinutes().toString().padStart(2,'0');
+                } else {
+                    timeTxt = (d.getMonth()+1) + "/" + d.getDate() + "/" + d.getFullYear().toString().slice(-2);
+                }
             }
             
             item.innerHTML = `
                 <input type="checkbox" class="cp-convo-checkbox" onclick="event.stopPropagation()" />
-                <div class="cp-convo-avatar">${avatarTxt}</div>
+                <div class="${avatarClass}">${isAdmin ? '<span class="material-symbols-outlined" style="font-size:20px;">storefront</span>' : avatarTxt}</div>
                 <div class="cp-convo-content">
                     <div class="cp-convo-header-row">
-                        <div class="cp-convo-name">${contact.username || 'User ' + contact.id}</div>
+                        <div class="cp-convo-name">${contact.username || 'User ' + contact.id}${isAdmin ? ' <span class="cp-admin-tag">Official</span>' : ''}</div>
                         <div class="cp-convo-time">${timeTxt}</div>
                     </div>
                     <div class="cp-convo-preview">${lastMsgTxt}</div>
                 </div>
+                ${isUnread ? '<div class="cp-unread-dot"></div>' : ''}
             `;
             
             list.appendChild(item);
         });
     }
 
+    // ========== CONVERSATION VIEW ==========
     async function selectPageContact(contact, element = null) {
         activePageContactId = contact.id;
+        
+        // Mark as read
+        markConvoRead(contact.id);
         
         document.getElementById("pageNoChatSelected").style.display = "none";
         document.getElementById("pageChatArea").style.display = "flex";
         
-        document.getElementById("pageChatName").innerText = contact.username || 'User ' + contact.id;
+        const isAdmin = (contact.role || '').toLowerCase() === 'admin';
+        document.getElementById("pageChatName").innerHTML = (contact.username || 'User ' + contact.id) + 
+            (isAdmin ? ' <span class="cp-admin-tag">Official</span>' : '');
         
-        // Highlight active
-        const items = document.querySelectorAll('.cp-convo-item');
-        items.forEach(el => el.classList.remove('active'));
-        if (element) {
-            element.classList.add('active');
-        } else {
-            loadPageContacts(); // Refresh list to highlight
-        }
+        // Highlight active and refresh list
+        renderPageContacts(allContacts);
+        updateBadgeCounts(allContacts);
         
         // Fetch history
         try {
@@ -249,7 +455,17 @@
         const chatMessages = document.getElementById("pageChatMessages");
         chatMessages.innerHTML = "";
         
+        let lastDate = "";
         messages.forEach(msg => {
+            const msgDate = new Date(msg.timestamp);
+            const dateStr = msgDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            if (dateStr !== lastDate) {
+                lastDate = dateStr;
+                const dateDivider = document.createElement("div");
+                dateDivider.className = "cp-date-divider";
+                dateDivider.innerHTML = `<span>${dateStr}</span>`;
+                chatMessages.appendChild(dateDivider);
+            }
             appendPageMessage(msg, false);
         });
         
@@ -289,6 +505,115 @@
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
+    // ========== BULK ACTIONS ==========
+    function getSelectedContactIds() {
+        const checkboxes = document.querySelectorAll('.cp-convo-checkbox:checked');
+        return Array.from(checkboxes).map(cb => {
+            const item = cb.closest('.cp-convo-item');
+            return parseInt(item.getAttribute('data-contact-id'));
+        });
+    }
+
+    function toggleSelectAll() {
+        const selectAll = document.getElementById('selectAllCheckbox').checked;
+        document.querySelectorAll('.cp-convo-checkbox').forEach(cb => cb.checked = selectAll);
+    }
+
+    function bulkDelete() {
+        const selected = getSelectedContactIds();
+        if (selected.length === 0) return;
+        
+        const deleted = getDeletedConvos();
+        selected.forEach(id => {
+            if (!deleted.includes(id)) deleted.push(id);
+        });
+        // Remove from archived if moving to deleted
+        const archived = getArchivedConvos();
+        setArchivedConvos(archived.filter(id => !selected.includes(id)));
+        setDeletedConvos(deleted);
+        
+        document.getElementById('selectAllCheckbox').checked = false;
+        renderPageContacts(allContacts);
+        updateBadgeCounts(allContacts);
+    }
+
+    function bulkMarkRead() {
+        const selected = getSelectedContactIds();
+        selected.forEach(id => markConvoRead(id));
+        document.getElementById('selectAllCheckbox').checked = false;
+        renderPageContacts(allContacts);
+        updateBadgeCounts(allContacts);
+    }
+
+    function bulkMarkUnread() {
+        const selected = getSelectedContactIds();
+        selected.forEach(id => markConvoUnread(id));
+        document.getElementById('selectAllCheckbox').checked = false;
+        renderPageContacts(allContacts);
+        updateBadgeCounts(allContacts);
+    }
+
+    function bulkArchive() {
+        const selected = getSelectedContactIds();
+        if (selected.length === 0) return;
+        
+        const archived = getArchivedConvos();
+        selected.forEach(id => {
+            if (!archived.includes(id)) archived.push(id);
+        });
+        // Remove from deleted if archiving
+        const deleted = getDeletedConvos();
+        setDeletedConvos(deleted.filter(id => !selected.includes(id)));
+        setArchivedConvos(archived);
+        
+        document.getElementById('selectAllCheckbox').checked = false;
+        renderPageContacts(allContacts);
+        updateBadgeCounts(allContacts);
+    }
+
+    function bulkRestore() {
+        const selected = getSelectedContactIds();
+        if (selected.length === 0) return;
+        
+        const deleted = getDeletedConvos();
+        const archived = getArchivedConvos();
+        setDeletedConvos(deleted.filter(id => !selected.includes(id)));
+        setArchivedConvos(archived.filter(id => !selected.includes(id)));
+        
+        document.getElementById('selectAllCheckbox').checked = false;
+        renderPageContacts(allContacts);
+        updateBadgeCounts(allContacts);
+    }
+
+    function deleteCurrentConvo() {
+        if (!activePageContactId) return;
+        const deleted = getDeletedConvos();
+        if (!deleted.includes(activePageContactId)) {
+            deleted.push(activePageContactId);
+            setDeletedConvos(deleted);
+        }
+        activePageContactId = null;
+        document.getElementById("pageChatArea").style.display = "none";
+        document.getElementById("pageNoChatSelected").style.display = "flex";
+        renderPageContacts(allContacts);
+        updateBadgeCounts(allContacts);
+    }
+
+    function archiveCurrentConvo() {
+        if (!activePageContactId) return;
+        const archived = getArchivedConvos();
+        if (!archived.includes(activePageContactId)) {
+            archived.push(activePageContactId);
+            setArchivedConvos(archived);
+        }
+        activePageContactId = null;
+        document.getElementById("pageChatArea").style.display = "none";
+        document.getElementById("pageNoChatSelected").style.display = "flex";
+        renderPageContacts(allContacts);
+        updateBadgeCounts(allContacts);
+    }
+
+    // ========== SEARCH / NEW CHAT ==========
     window.startNewPageChat = async function() {
         const searchInput = document.getElementById("pageSearchUserInput");
         const username = searchInput.value.trim();
@@ -303,6 +628,14 @@
                     if (user.id === currentUserId) {
                         alert("You cannot chat with yourself.");
                     } else {
+                        // Ensure conversation is not in deleted/archived
+                        const deleted = getDeletedConvos();
+                        const archived = getArchivedConvos();
+                        setDeletedConvos(deleted.filter(id => id !== user.id));
+                        setArchivedConvos(archived.filter(id => id !== user.id));
+                        
+                        // Switch to inbox
+                        setActiveFolder('inbox', document.querySelector('[data-folder="inbox"]'));
                         selectPageContact(user);
                         searchInput.value = "";
                     }
@@ -317,5 +650,29 @@
             }
         }
     };
-</script>
 
+    // ========== CUSTOM FOLDERS ==========
+    function createCustomFolder() {
+        const name = prompt("Enter folder name:");
+        if (name && name.trim()) {
+            const folders = getCustomFolders();
+            folders.push({ name: name.trim(), contacts: [] });
+            setCustomFolders(folders);
+            renderCustomFolders();
+        }
+    }
+
+    function renderCustomFolders() {
+        const container = document.getElementById('customFolders');
+        container.innerHTML = '';
+        const folders = getCustomFolders();
+        folders.forEach((folder, idx) => {
+            const div = document.createElement('div');
+            div.className = 'cp-nav-link cp-custom-folder';
+            div.innerHTML = `<span class="material-symbols-outlined" style="font-size:16px;">folder</span> ${folder.name}`;
+            div.onclick = () => setActiveFolder(`custom-${idx}`, div);
+            container.appendChild(div);
+        });
+    }
+    renderCustomFolders();
+</script>

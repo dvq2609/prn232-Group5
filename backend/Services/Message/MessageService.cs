@@ -81,12 +81,18 @@ public class MessageService : IMessageService
                 };
             }
 
+            // Count unread messages (messages received from this contact that are not read)
+            var unreadCount = history.Count(m => m.ReceiverId == currentUserId && m.SenderId == contact.Id);
+
             chatUserDtos.Add(new ChatUserDto
             {
                 Id = contact.Id,
                 Username = contact.Username,
                 AvatarUrl = contact.AvatarUrl,
-                LastMessage = lastMessageDto
+                Role = contact.Role,
+                LastMessage = lastMessageDto,
+                UnreadCount = unreadCount,
+                LastMessageIsMine = lastMsg?.SenderId == currentUserId
             });
         }
         
