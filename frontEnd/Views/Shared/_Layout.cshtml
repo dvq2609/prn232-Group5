@@ -144,7 +144,10 @@
     <main class="max-w-[1300px] mx-auto px-4 py-8">
         @RenderBody()
     </main>
-    @await Html.PartialAsync("_ChatWidget")
+    @if (ViewData["HideChatWidget"] == null)
+    {
+        @await Html.PartialAsync("_ChatWidget")
+    }
     @await Html.PartialAsync("_SupportWidget")
     <footer class="bg-white border-t border-gray-200 pt-12 pb-8 mt-12">
         <div class="max-w-[1300px] mx-auto px-4">
