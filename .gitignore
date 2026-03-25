@@ -71,3 +71,4 @@ appsettings.Production.json
 .brain/session_log.txt
 backend/build_errors.txt
 *.png
+*.md
