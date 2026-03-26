@@ -2,7 +2,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-builder.Services.AddHttpClient();
+builder.Services.AddTransient<frontEnd.Helpers.RateLimitDelegatingHandler>();
+builder.Services.AddHttpClient(Microsoft.Extensions.Options.Options.DefaultName)
+    .AddHttpMessageHandler<frontEnd.Helpers.RateLimitDelegatingHandler>();
 builder.Services.AddSession( options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);

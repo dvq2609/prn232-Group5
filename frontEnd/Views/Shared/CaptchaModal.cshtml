@@ -1,0 +1,49 @@
+<div id="captcha-modal-overlay" class="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full text-center relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-1 bg-red-500"></div>
+        <span class="material-symbols-outlined text-5xl text-red-500 mb-4 inline-block">gpp_maybe</span>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Hệ Thống Chống Thư Rác</h3>
+        <p class="text-gray-600 text-sm mb-6">
+            Hệ thống phát hiện dấu hiệu truy cập liên tục. <br /> Vui lòng xác minh không phải Robot để tiếp tục trải nghiệm.
+        </p>
+        <div class="flex justify-center mb-6 min-h-[78px]">
+            <!-- Google reCAPTCHA Widget -->
+            <!-- Note: Sử dụng sitekey môi trường test của Google. Thay bằng key thật khi apply production -->
+            <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" data-callback="onCaptchaValid"></div>
+        </div>
+        <div id="captcha-error" class="hidden text-red-500 text-xs mt-2 font-medium mb-4">
+            Vui lòng giải Captcha trước nhé!
+        </div>
+    </div>
+</div>
+
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<script>
+    async function onCaptchaValid(token) {
+        try {
+            const response = await fetch('/Captcha/Verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: token })
+            });
+
+            if (response.ok) {
+                document.getElementById('captcha-modal-overlay').classList.add('hidden');
+                
+                // Nếu fullPageRateLimit được cắm (từ layout) thì ép reload toàn trang luôn
+                if (window.fullPageRateLimit) {
+                    window.location.reload();
+                }
+            } else {
+                document.getElementById('captcha-error').textContent = 'Xác thực từ chối, vui lòng quét lại.';
+                document.getElementById('captcha-error').classList.remove('hidden');
+                grecaptcha.reset();
+            }
+        } catch (error) {
+            console.error(error);
+            document.getElementById('captcha-error').textContent = 'Lỗi server. Không thể xác thực.';
+            document.getElementById('captcha-error').classList.remove('hidden');
+            grecaptcha.reset();
+        }
+    }
+</script>

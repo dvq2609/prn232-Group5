@@ -23,6 +23,10 @@ namespace frontEnd.Controllers
                     return View(product);
                 }
             }
+            if (HttpContext.Items.ContainsKey("RateLimitExceeded") && (bool)HttpContext.Items["RateLimitExceeded"])
+            {
+                return View("Error", new ErrorViewModel { RequestId = "RATE_LIMIT" });
+            }
             return NotFound();
         }
 

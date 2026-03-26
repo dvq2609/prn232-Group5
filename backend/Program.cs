@@ -17,6 +17,7 @@ using backend.Services.Message;
 using backend.Hubs;
 using backend.Repositories.Notification;
 using backend.Services.Notification;
+using backend.Middlewares;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -105,6 +106,9 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorization();
 
+builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -142,11 +146,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedFor | Microsoft.AspNetCore.HttpOverrides.ForwardedHeaders.XForwardedProto
+});
+
 // app.UseHttpsRedirection(); // Đã đóng lại để không bắt buộc chạy HTTPS trong Docker
 app.UseCors("AllowAll");
 app.UseStaticFiles(); // Cho phép serve file trong wwwroot
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Bắt buộc cấu hình middleware chặn lại SAU khối Auth để lấy được AccountId thay vì rỗng hoàn toàn
+app.UseCustomRateLimiting();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/chathub");

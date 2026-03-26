@@ -3,6 +3,7 @@
     var email = HttpContextAccessor.HttpContext.Session.GetString("Email");
     var role = HttpContextAccessor.HttpContext.Session.GetString("Role");
     var accountId = HttpContextAccessor.HttpContext.Session.GetInt32("AccountId");
+    var showCaptcha = Context.Items.ContainsKey("RateLimitExceeded") && (bool)Context.Items["RateLimitExceeded"]!;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -144,6 +145,15 @@
     <main class="max-w-[1300px] mx-auto px-4 py-8">
         @RenderBody()
     </main>
+    
+    @if (showCaptcha)
+    {
+        <script>
+            window.fullPageRateLimit = true;
+        </script>
+        @await Html.PartialAsync("CaptchaModal")
+    }
+
     @if (ViewData["HideChatWidget"] == null)
     {
         @await Html.PartialAsync("_ChatWidget")
